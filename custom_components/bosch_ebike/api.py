@@ -6,11 +6,12 @@ import hashlib
 import base64
 import secrets
 import logging
+from datetime import datetime, UTC
 from typing import Any
 
 import aiohttp
 
-from .const import API_BASE_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT
+from .const import API_BASE_PROFILE_URL, API_BASE_ACTIVITY_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,47 +120,110 @@ class BoschEBikeAPI:
 
     # -- API calls --
 
-    async def _get(self, path: str, retry_on_401: bool = True) -> Any:
+    async def _get(self, base_url: str, path: str, retry_on_401: bool = True) -> Any:
         """GET request with Bearer auth and auto-refresh on 401."""
         if not self._access_token:
             raise AuthError("Not authenticated")
         headers = {"Authorization": f"Bearer {self._access_token}"}
-        url = f"{API_BASE_URL}{path}"
+        url = f"{base_url}{path}"
         async with self._session.get(url, headers=headers) as resp:
             if resp.status == 401 and retry_on_401:
                 _LOGGER.debug("401 received, refreshing token")
                 await self.refresh_access_token()
-                return await self._get(path, retry_on_401=False)
+                return await self._get(base_url, path, retry_on_401=False)
             resp.raise_for_status()
             return await resp.json()
 
+    def convert_bikes(self, bikes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        new = []
+        for b in bikes:
+            batteries = []
+            for batt in b['batteries']:
+                batteries.append({
+                    'deliveredWhOverLifetime': batt['deliveredWhOverLifetime'],
+                    'chargeCycles': batt['numberOfFullChargeCycles']
+                })
+            new.append({
+                'id': b['id'],
+                'oemId': b['driveUnit']['oemBikeId'],
+                'createdAt': b['createdAt'],
+                'language': b['remoteControl']['language'],
+                'serviceDue': { 
+                    'date': b['remoteControl']['serviceDue']['date'],
+                    'odometer': b['remoteControl']['serviceDue']['totalDistance']
+                },
+                'driveUnit': {
+                    'productName': b['driveUnit']['productName'],
+                    'serialNumber': b['driveUnit']['serialNumber'],
+                    'maximumAssistanceSpeed': b['driveUnit']['maxAssistanceSpeed'],
+                    'odometer': b['driveUnit']['totalDistanceTraveled'],
+                    'powerOnTime': b['driveUnit']['powerOnTime'],
+                    'walkAssistConfiguration': {
+                        'isEnabled': b['driveUnit']['walkAssist']['isEnabled'],
+                        'maximumSpeed': b['driveUnit']['walkAssist']['maximumSpeed']
+                    }
+                },
+                'batteries': batteries
+            })
+        return new
+
     async def get_bikes(self) -> list[dict[str, Any]]:
         """Fetch all bike profiles."""
-        data = await self._get(BIKES_ENDPOINT)
-        return data.get("bikes", [])
+        data = await self._get(API_BASE_PROFILE_URL, BIKES_ENDPOINT)
+        return self.convert_bikes(data)
+
+    def convert_summary(self, activity: dict[str, Any]) -> dict[str, Any]:
+        attributes = activity.pop("attributes")
+        activity.update(attributes)
+
+        new = {}
+        new['id'] = activity['id']
+        new['bikeId'] = activity['bikeId']
+        new['title'] = activity['title']
+        new['durationWithoutStops'] = activity['durationWithoutStops']
+        new['startOdometer'] = activity['startOdometer']
+        new['distance'] = activity['distance']
+        
+        # convert timestamps
+        start_time = datetime.fromtimestamp(activity.get("startTime", 0), UTC)
+        end_time = datetime.fromtimestamp(activity.get("endTime", 0), UTC)
+        new['startTime'] = start_time.isoformat().replace("+00:00", "Z")
+        new['endTime'] = end_time.isoformat().replace("+00:00", "Z")
+        new['timeZone'] = activity['timeZoneOfActivity']
+
+        new['speed'] = { 'average': activity['averageSpeed'], 'maximum': activity['maximumSpeed'] }
+        new['cadence'] = { 'average': activity['averageCadence'], 'maximum': activity['maximumCadence'] }
+        new['riderPower'] = { 'average': activity['averageRiderPower'], 'maximum': activity['maximumRiderPower'] }
+        new['elevation'] = { 'gain': activity['elevationGain'], 'loss': activity['elevationLoss'] }
+        new['caloriesBurned'] = activity['caloriesBurnt']
+
+        return new
 
     async def get_latest_activity(self) -> dict[str, Any] | None:
         """Fetch the most recent activity summary."""
-        data = await self._get(f"{ACTIVITIES_ENDPOINT}?limit=1&sort=-startTime")
-        summaries = data.get("activitySummaries", [])
-        return summaries[0] if summaries else None
+        data = await self._get(API_BASE_ACTIVITY_URL, f"{ACTIVITIES_ENDPOINT}?page=0&size=1&sort=-startTime")
+        summaries = data.get("data", [])
+        return self.convert_summary(summaries[0]) if summaries else None
 
     async def get_all_activities(self, page_size: int = 50) -> list[dict[str, Any]]:
         """Fetch all activity summaries with pagination."""
         all_activities: list[dict[str, Any]] = []
-        offset = 0
+        page = 0
+        offset=0
 
         while True:
-            data = await self._get(
-                f"{ACTIVITIES_ENDPOINT}?limit={page_size}&offset={offset}&sort=-startTime"
+            data = await self._get(API_BASE_ACTIVITY_URL, 
+                f"{ACTIVITIES_ENDPOINT}?page={page}&size={page_size}&sort=-startTime"
             )
-            summaries = data.get("activitySummaries", [])
+            summaries = data.get("data", [])
             if not summaries:
                 break
 
-            all_activities.extend(summaries)
-
-            total = data.get("pagination", {}).get("total", 0)
+            for s in summaries:
+                all_activities.append(self.convert_summary(s))
+ 
+            total = data.get("meta", {}).get("total", 0)
+            page += 1
             offset += page_size
             _LOGGER.debug(
                 "Bosch eBike: Fetched %d/%d activities", len(all_activities), total
@@ -171,10 +235,27 @@ class BoschEBikeAPI:
         _LOGGER.info("Bosch eBike: Imported %d activities total", len(all_activities))
         return all_activities
 
+    def convert_detail(self, activity: dict[str: Any]) -> dict[str, Any]:
+        activity = activity.get("data", {})
+
+        points = []
+        for p in activity['attributes']['activityData']:
+            points.append({
+                'distance': p['s'],
+                'altitude': p['h'],
+                'speed': p['v'],
+                'cadence': p['c'],
+                'latitude': p['lat'],
+                'longitude': p['lon'],
+                'riderPower': p['p']
+            })
+
+        return {'activityDetails': points}
+    
     async def get_activity_detail(self, activity_id: str) -> dict[str, Any]:
         """Fetch full activity detail including GPS track points."""
-        data = await self._get(f"{ACTIVITIES_ENDPOINT}/{activity_id}/details")
-        return data
+        data = await self._get(API_BASE_ACTIVITY_URL, f"{ACTIVITIES_ENDPOINT}/{activity_id}/detail")
+        return self.convert_detail(data)
 
     async def get_all_activity_details(
         self, activity_ids: list[str], progress_callback: Any = None

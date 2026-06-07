@@ -88,15 +88,6 @@ def _calc_days_since(activity: dict) -> int | None:
     return max(0, delta.days)
 
 
-def _format_assist_modes(data: dict) -> str | None:
-    """Format active assist modes as readable string."""
-    modes = _safe_get(data, "driveUnit", "activeAssistModes")
-    if not modes:
-        return None
-    names = [m.get("name", "?") for m in modes if m.get("name") != "0"]
-    return ", ".join(names) if names else None
-
-
 BIKE_SENSORS: tuple[BoschBikeSensorDescription, ...] = (
     BoschBikeSensorDescription(
         key="odometer",
@@ -135,13 +126,6 @@ BIKE_SENSORS: tuple[BoschBikeSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
         icon="mdi:speedometer",
         value_fn=lambda d: _safe_get(d, "driveUnit", "maximumAssistanceSpeed"),
-    ),
-    BoschBikeSensorDescription(
-        key="active_assist_modes",
-        translation_key="active_assist_modes",
-        name="Active Assist Modes",
-        icon="mdi:bike-fast",
-        value_fn=_format_assist_modes,
     ),
     BoschBikeSensorDescription(
         key="walk_assist_speed",
