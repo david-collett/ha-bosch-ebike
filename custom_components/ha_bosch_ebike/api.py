@@ -11,7 +11,7 @@ from typing import Any
 
 import aiohttp
 
-from .const import API_BASE_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT, BIKE_PASS_ENDPOINT, SERVICE_RECORDS_ENDPOINT
+from .const import API_BASE_PROFILE_URL, API_BASE_ACTIVITY_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT, BIKE_PASS_ENDPOINT, SERVICE_RECORDS_ENDPOINT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ class BoschEBikeAPI:
                 'createdAt': b['createdAt'],
                 'language': b['remoteControl']['language'],
                 'serviceDue': { 
-                    'date': b['remoteControl']['serviceDue']['date'],
+                    'date': b['remoteControl']['serviceDue']['date'] + "T00:00:00Z",
                     'odometer': b['remoteControl']['serviceDue']['totalDistance']
                 },
                 'driveUnit': {
