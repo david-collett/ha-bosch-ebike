@@ -30,7 +30,7 @@ const I18N = {
     // Map controls
     btn_change_style: "Change map style",
     btn_wiki: "Wikipedia articles",
-    btn_poi: "Charging stations, repair shops, drinking water, toilets",
+    btn_poi: "Charging stations, repair shops, drinking water, toilets, food",
     btn_gpx: "Download GPX",
     btn_chase: "Chase-cam playback",
     editor_chase_section: "Chase-cam playback (shared)",
@@ -87,6 +87,18 @@ const I18N = {
     poi_water: "Drinking water",
     poi_toilet: "Toilet",
     poi_open_osm: "Open on OpenStreetMap",
+    poi_food: "Restaurant",
+    poi_cafe: "Café",
+    poi_biergarten: "Beer garden",
+    rp_poi_btn: "Show POIs along the route (charging, repair, water, toilets, food)",
+    rp_poi_error: "POIs could not be loaded",
+    rp_save_btn: "Save route",
+    rp_routes_btn: "Saved routes",
+    rp_name_placeholder: "Route name",
+    rp_save_ok: "Route saved",
+    rp_save_cancel: "Cancel",
+    rp_no_saved: "No saved routes yet",
+    rp_load_failed: "Could not load saved routes",
     // Editor
     editor_height: "Card height (px)",
     editor_title: "Title (optional)",
@@ -98,7 +110,7 @@ const I18N = {
     editor_wiki_radius: "Wikipedia search radius",
     editor_wiki_radius_hint: "How far around each route sample point Wikipedia articles are searched. Larger radius = more results, more data.",
     editor_poi_radius: "POI search radius",
-    editor_poi_radius_hint: "How far around the route charging stations, repair shops, drinking water and toilets are searched.",
+    editor_poi_radius_hint: "How far around the route charging stations, repair shops, drinking water, toilets and food are searched.",
     editor_select_all: "All",
     radius_default_suffix: "(default)",
     // Heatmap card
@@ -149,6 +161,22 @@ const I18N = {
     dash_label_last_tour: "Last tour",
     dash_label_battery: "Battery",
     dash_label_charge_power: "Charging power",
+    dash_label_range: "Range (est.)",
+    dash_editor_section_modes: "Range per ride mode (pills)",
+    dash_editor_show_range_pills: "Show range per ride mode as pills",
+    dash_editor_mode_colors_hint: "Assign a colour to each ride mode (matching the Bosch Flow app). \"Auto\" uses the Bosch default colour.",
+    dash_editor_modes_none: "No ride-mode range sensors detected yet. They appear once the bike data has loaded.",
+    dash_editor_color_auto: "Auto (Bosch default)",
+    color_red: "Red",
+    color_orange: "Orange",
+    color_yellow: "Yellow",
+    color_green: "Green",
+    color_turquoise: "Turquoise",
+    color_blue: "Blue",
+    color_purple: "Purple",
+    color_magenta: "Magenta",
+    dash_editor_range: "Estimated range entity (optional)",
+    dash_editor_range_hint: "Sensor \"Estimated range (current)\" of the integration. If empty, the card auto-detects it; the tile is hidden when no value is available.",
     dash_label_target_soc: "Stop charging at",
     dash_state_charging: "Charging",
     dash_state_not_charging: "Not charging",
@@ -288,6 +316,35 @@ const I18N = {
     map3d_editor_show_elevation: "Show elevation",
     map3d_editor_stats_as_chips: "Stats as overlay chips (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = render distance, speed and elevation as chips in the top-left overlay next to date and time. 0 = keep the classic stats line in the bottom control bar (default).",
+    // Route planner card
+    rp_card_name: "Bosch eBike Route Planner",
+    rp_card_desc: "Plan bike routes with BRouter: consumption estimate, battery check and GPX export",
+    rp_default_title: "Route planner",
+    rp_hint_click: "Click the map to set start and destination — more clicks add via points. Drag markers to move, click a marker to remove it.",
+    rp_profile_label: "Profile",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Road bike",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Shortest",
+    rp_reset: "Reset",
+    rp_export_gpx: "Export GPX",
+    rp_routing: "Calculating route …",
+    rp_stat_distance: "Distance",
+    rp_stat_ascent: "Ascent",
+    rp_stat_descent: "Descent",
+    rp_stat_time: "Ride time",
+    rp_stat_energy: "Est. consumption",
+    rp_batt_line: (wh, pct, soc) => `Needs ~${wh} Wh ≈ ${pct} % · battery now: ${soc} %`,
+    rp_estimate_note: "Estimate based on your average consumption — actual range depends on assist mode, terrain, wind and temperature.",
+    rp_hilly_note: "Lots of climbing on this route — the estimate may be too optimistic.",
+    rp_err_no_route: "No route found (waypoint off the road network or outside coverage?)",
+    rp_err_server: "Routing server not reachable",
+    rp_privacy_note: "Waypoints are sent to the configured BRouter server (default: brouter.de).",
+    rp_editor_brouter_url: "BRouter server (optional)",
+    rp_editor_entity: "Range sensor (optional)",
+    rp_editor_entity_hint: "Source for average consumption and battery capacity — auto-detected when empty.",
+    rp_editor_soc: "Live battery sensor (optional)",
+    rp_editor_soc_hint: "Current charge level for the battery check — falls back to the range sensors when empty.",
   },
   de: {
     rides_title: "Bosch eBike Rides",
@@ -309,7 +366,7 @@ const I18N = {
     sort_battery_pct: "Akku %",
     btn_change_style: "Kartenstil wechseln",
     btn_wiki: "Wikipedia-Artikel",
-    btn_poi: "Ladestationen, Werkstätten, Trinkwasser, Toiletten",
+    btn_poi: "Ladestationen, Werkstätten, Trinkwasser, Toiletten, Gastronomie",
     btn_gpx: "GPX herunterladen",
     btn_chase: "Chase-Cam-Wiedergabe",
     editor_chase_section: "Chase-Cam-Wiedergabe (geteilt)",
@@ -360,6 +417,18 @@ const I18N = {
     poi_water: "Trinkwasser",
     poi_toilet: "Toilette",
     poi_open_osm: "Auf OpenStreetMap",
+    poi_food: "Gaststätte",
+    poi_cafe: "Café",
+    poi_biergarten: "Biergarten",
+    rp_poi_btn: "POIs entlang der Route anzeigen (Laden, Werkstatt, Wasser, Toiletten, Gastronomie)",
+    rp_poi_error: "POIs konnten nicht geladen werden",
+    rp_save_btn: "Route speichern",
+    rp_routes_btn: "Gespeicherte Routen",
+    rp_name_placeholder: "Name der Route",
+    rp_save_ok: "Route gespeichert",
+    rp_save_cancel: "Abbrechen",
+    rp_no_saved: "Noch keine gespeicherten Routen",
+    rp_load_failed: "Gespeicherte Routen konnten nicht geladen werden",
     editor_height: "Kartenhöhe (px)",
     editor_title: "Titel (optional)",
     editor_title_hint: "Wird in der Kopfzeile der Karte angezeigt — nützlich, wenn Du mehrere fest verdrahtete Karten nebeneinander hast.",
@@ -370,7 +439,7 @@ const I18N = {
     editor_wiki_radius: "Wikipedia-Suchradius",
     editor_wiki_radius_hint: "Wie weit um jeden Stützpunkt der Route Wikipedia-Artikel gesucht werden. Größerer Radius = mehr Treffer, mehr Daten.",
     editor_poi_radius: "POI-Suchradius",
-    editor_poi_radius_hint: "Wie weit um die Route Ladestationen, Werkstätten, Trinkwasser und Toiletten gesucht werden.",
+    editor_poi_radius_hint: "Wie weit um die Route Ladestationen, Werkstätten, Trinkwasser, Toiletten und Gastronomie gesucht werden.",
     editor_select_all: "Alle",
     radius_default_suffix: "(Standard)",
     heatmap_title: "Bosch eBike Heatmap",
@@ -418,6 +487,22 @@ const I18N = {
     dash_label_last_tour: "Letzte Tour",
     dash_label_battery: "Akku",
     dash_label_charge_power: "Ladeleistung",
+    dash_label_range: "Reichweite (geschätzt)",
+    dash_editor_section_modes: "Reichweite je Fahrmodus (Piles)",
+    dash_editor_show_range_pills: "Reichweite je Fahrmodus als Piles anzeigen",
+    dash_editor_mode_colors_hint: "Ordne jedem Fahrmodus eine Farbe zu (passend zur Bosch Flow App). „Auto“ nutzt die Bosch-Standardfarbe.",
+    dash_editor_modes_none: "Noch keine Reichweite-Sensoren je Fahrmodus erkannt. Sie erscheinen, sobald die Fahrraddaten geladen sind.",
+    dash_editor_color_auto: "Auto (Bosch-Standard)",
+    color_red: "Rot",
+    color_orange: "Orange",
+    color_yellow: "Gelb",
+    color_green: "Grün",
+    color_turquoise: "Türkis",
+    color_blue: "Blau",
+    color_purple: "Violett",
+    color_magenta: "Magenta",
+    dash_editor_range: "Reichweiten-Sensor (optional)",
+    dash_editor_range_hint: "Sensor \"Geschätzte Reichweite (aktuell)\" der Integration. Leer = automatische Erkennung; ohne Wert wird die Kachel ausgeblendet.",
     dash_label_target_soc: "Laden stoppen bei",
     dash_state_charging: "Lädt",
     dash_state_not_charging: "Lädt nicht",
@@ -557,6 +642,34 @@ const I18N = {
     map3d_editor_show_elevation: "Höhe anzeigen",
     map3d_editor_stats_as_chips: "Stats als Overlay-Chips (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = Distanz, Geschwindigkeit und Höhe werden als Chips oben links neben Datum und Uhrzeit angezeigt. 0 = klassische Stats-Zeile in der unteren Steuerleiste (Default).",
+    rp_card_name: "Bosch eBike Routenplaner",
+    rp_card_desc: "Fahrrad-Routen mit BRouter planen: Verbrauchs-Schätzung, Akku-Check und GPX-Export",
+    rp_default_title: "Routenplaner",
+    rp_hint_click: "Klicke auf die Karte für Start und Ziel — weitere Klicks ergänzen Zwischenpunkte. Marker ziehen = verschieben, Marker anklicken = löschen.",
+    rp_profile_label: "Profil",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Rennrad",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Kürzeste",
+    rp_reset: "Zurücksetzen",
+    rp_export_gpx: "GPX exportieren",
+    rp_routing: "Route wird berechnet …",
+    rp_stat_distance: "Distanz",
+    rp_stat_ascent: "Anstieg",
+    rp_stat_descent: "Abstieg",
+    rp_stat_time: "Fahrzeit",
+    rp_stat_energy: "Verbrauch (geschätzt)",
+    rp_batt_line: (wh, pct, soc) => `Benötigt ~${wh} Wh ≈ ${pct} % · Akku aktuell: ${soc} %`,
+    rp_estimate_note: "Schätzung auf Basis deines Durchschnittsverbrauchs — die tatsächliche Reichweite hängt von Unterstützungsmodus, Topografie, Wind und Temperatur ab.",
+    rp_hilly_note: "Viele Höhenmeter auf der Route — die Schätzung kann zu optimistisch sein.",
+    rp_err_no_route: "Keine Route gefunden (Wegpunkt abseits des Wegenetzes oder außerhalb der Abdeckung?)",
+    rp_err_server: "Routing-Server nicht erreichbar",
+    rp_privacy_note: "Wegpunkte werden an den konfigurierten BRouter-Server gesendet (Standard: brouter.de).",
+    rp_editor_brouter_url: "BRouter-Server (optional)",
+    rp_editor_entity: "Reichweiten-Sensor (optional)",
+    rp_editor_entity_hint: "Quelle für Ø-Verbrauch und Akku-Kapazität — leer = automatische Erkennung.",
+    rp_editor_soc: "Live-Akkustand-Sensor (optional)",
+    rp_editor_soc_hint: "Aktueller Ladestand für den Akku-Check — leer = Wert aus den Reichweiten-Sensoren.",
   },
   nl: {
     rides_title: "Bosch eBike Ritten",
@@ -578,7 +691,7 @@ const I18N = {
     sort_battery_pct: "Accu %",
     btn_change_style: "Kaartstijl wisselen",
     btn_wiki: "Wikipedia-artikelen",
-    btn_poi: "Laadstations, werkplaatsen, drinkwater, toiletten",
+    btn_poi: "Laadstations, werkplaatsen, drinkwater, toiletten, horeca",
     btn_gpx: "GPX downloaden",
     btn_chase: "Chase-cam afspelen",
     editor_chase_section: "Chase-cam afspelen (gedeeld)",
@@ -629,6 +742,18 @@ const I18N = {
     poi_water: "Drinkwater",
     poi_toilet: "Toilet",
     poi_open_osm: "Op OpenStreetMap openen",
+    poi_food: "Restaurant",
+    poi_cafe: "Café",
+    poi_biergarten: "Biertuin",
+    rp_poi_btn: "POI's langs de route tonen (laden, werkplaats, water, toiletten, horeca)",
+    rp_poi_error: "POI's konden niet worden geladen",
+    rp_save_btn: "Route opslaan",
+    rp_routes_btn: "Opgeslagen routes",
+    rp_name_placeholder: "Naam van de route",
+    rp_save_ok: "Route opgeslagen",
+    rp_save_cancel: "Annuleren",
+    rp_no_saved: "Nog geen opgeslagen routes",
+    rp_load_failed: "Opgeslagen routes konden niet worden geladen",
     editor_height: "Kaarthoogte (px)",
     editor_title: "Titel (optioneel)",
     editor_title_hint: "Wordt in de koptekst van de kaart getoond — handig als je meerdere vastgezette kaarten naast elkaar hebt.",
@@ -639,7 +764,7 @@ const I18N = {
     editor_wiki_radius: "Wikipedia-zoekstraal",
     editor_wiki_radius_hint: "Hoe ver er rond elk steunpunt van de route naar Wikipedia-artikelen wordt gezocht. Grotere straal = meer treffers, meer data.",
     editor_poi_radius: "POI-zoekstraal",
-    editor_poi_radius_hint: "Hoe ver er rond de route naar laadstations, werkplaatsen, drinkwater en toiletten wordt gezocht.",
+    editor_poi_radius_hint: "Hoe ver er rond de route naar laadstations, werkplaatsen, drinkwater, toiletten en horeca wordt gezocht.",
     editor_select_all: "Alle",
     radius_default_suffix: "(standaard)",
     heatmap_title: "Bosch eBike Heatmap",
@@ -687,6 +812,22 @@ const I18N = {
     dash_label_last_tour: "Laatste rit",
     dash_label_battery: "Accu",
     dash_label_charge_power: "Laadvermogen",
+    dash_label_range: "Actieradius (geschat)",
+    dash_editor_section_modes: "Bereik per rijmodus (pillen)",
+    dash_editor_show_range_pills: "Bereik per rijmodus als pillen tonen",
+    dash_editor_mode_colors_hint: "Wijs elke rijmodus een kleur toe (zoals in de Bosch Flow app). \"Auto\" gebruikt de Bosch-standaardkleur.",
+    dash_editor_modes_none: "Nog geen bereiksensoren per rijmodus gevonden. Ze verschijnen zodra de fietsgegevens geladen zijn.",
+    dash_editor_color_auto: "Auto (Bosch-standaard)",
+    color_red: "Rood",
+    color_orange: "Oranje",
+    color_yellow: "Geel",
+    color_green: "Groen",
+    color_turquoise: "Turquoise",
+    color_blue: "Blauw",
+    color_purple: "Paars",
+    color_magenta: "Magenta",
+    dash_editor_range: "Actieradius-sensor (optioneel)",
+    dash_editor_range_hint: "Sensor \"Geschatte actieradius (actueel)\" van de integratie. Leeg = automatische detectie; zonder waarde wordt de tegel verborgen.",
     dash_label_target_soc: "Laden stoppen bij",
     dash_state_charging: "Aan het laden",
     dash_state_not_charging: "Niet aan het laden",
@@ -826,6 +967,34 @@ const I18N = {
     map3d_editor_show_elevation: "Hoogte tonen",
     map3d_editor_stats_as_chips: "Stats als overlay-chips (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = afstand, snelheid en hoogte verschijnen als chips linksboven naast datum en tijd. 0 = klassieke stats-regel in de onderste balk (default).",
+    rp_card_name: "Bosch eBike Routeplanner",
+    rp_card_desc: "Fietsroutes plannen met BRouter: verbruiksschatting, accucontrole en GPX-export",
+    rp_default_title: "Routeplanner",
+    rp_hint_click: "Klik op de kaart voor start en bestemming — extra klikken voegen tussenpunten toe. Marker slepen = verplaatsen, marker aanklikken = verwijderen.",
+    rp_profile_label: "Profiel",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Racefiets",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Kortste",
+    rp_reset: "Resetten",
+    rp_export_gpx: "GPX exporteren",
+    rp_routing: "Route wordt berekend …",
+    rp_stat_distance: "Afstand",
+    rp_stat_ascent: "Stijging",
+    rp_stat_descent: "Daling",
+    rp_stat_time: "Rijtijd",
+    rp_stat_energy: "Geschat verbruik",
+    rp_batt_line: (wh, pct, soc) => `Nodig ~${wh} Wh ≈ ${pct} % · accu nu: ${soc} %`,
+    rp_estimate_note: "Schatting op basis van je gemiddelde verbruik — het werkelijke bereik hangt af van ondersteuningsmodus, terrein, wind en temperatuur.",
+    rp_hilly_note: "Veel hoogtemeters op deze route — de schatting kan te optimistisch zijn.",
+    rp_err_no_route: "Geen route gevonden (wegpunt buiten het wegennet of buiten het dekkingsgebied?)",
+    rp_err_server: "Routeringsserver niet bereikbaar",
+    rp_privacy_note: "Wegpunten worden naar de geconfigureerde BRouter-server gestuurd (standaard: brouter.de).",
+    rp_editor_brouter_url: "BRouter-server (optioneel)",
+    rp_editor_entity: "Actieradius-sensor (optioneel)",
+    rp_editor_entity_hint: "Bron voor gemiddeld verbruik en accucapaciteit — leeg = automatische detectie.",
+    rp_editor_soc: "Live-accusensor (optioneel)",
+    rp_editor_soc_hint: "Actuele laadstand voor de accucheck — leeg = waarde uit de actieradius-sensoren.",
   },
   fr: {
     // Main card
@@ -849,7 +1018,7 @@ const I18N = {
     // Map controls
     btn_change_style: "Changer le style de carte",
     btn_wiki: "Articles Wikipedia",
-    btn_poi: "Bornes de recharge, ateliers, eau potable, toilettes",
+    btn_poi: "Bornes de recharge, ateliers, eau potable, toilettes, restauration",
     btn_gpx: "Télécharger GPX",
     btn_chase: "Lecture chase-cam",
     editor_chase_section: "Lecture chase-cam (partagé)",
@@ -906,6 +1075,18 @@ const I18N = {
     poi_water: "Eau potable",
     poi_toilet: "Toilettes",
     poi_open_osm: "Ouvrir sur OpenStreetMap",
+    poi_food: "Restaurant",
+    poi_cafe: "Café",
+    poi_biergarten: "Biergarten",
+    rp_poi_btn: "Afficher les POI le long de l'itinéraire (recharge, atelier, eau, toilettes, restauration)",
+    rp_poi_error: "Impossible de charger les POI",
+    rp_save_btn: "Enregistrer l'itinéraire",
+    rp_routes_btn: "Itinéraires enregistrés",
+    rp_name_placeholder: "Nom de l'itinéraire",
+    rp_save_ok: "Itinéraire enregistré",
+    rp_save_cancel: "Annuler",
+    rp_no_saved: "Aucun itinéraire enregistré pour l'instant",
+    rp_load_failed: "Impossible de charger les itinéraires enregistrés",
     // Editor
     editor_height: "Hauteur de la carte (px)",
     editor_title: "Titre (optionnel)",
@@ -917,7 +1098,7 @@ const I18N = {
     editor_wiki_radius: "Rayon de recherche Wikipedia",
     editor_wiki_radius_hint: "Jusqu'où chercher des articles Wikipedia autour de chaque point de l'itinéraire. Rayon plus grand = plus de résultats, plus de données.",
     editor_poi_radius: "Rayon de recherche POI",
-    editor_poi_radius_hint: "Jusqu'où chercher bornes de recharge, ateliers, eau potable et toilettes autour de l'itinéraire.",
+    editor_poi_radius_hint: "Jusqu'où chercher bornes de recharge, ateliers, eau potable, toilettes et restauration autour de l'itinéraire.",
     editor_select_all: "Tous",
     radius_default_suffix: "(par défaut)",
     // Heatmap card
@@ -968,6 +1149,22 @@ const I18N = {
     dash_label_last_tour: "Dernière sortie",
     dash_label_battery: "Batterie",
     dash_label_charge_power: "Puissance de charge",
+    dash_label_range: "Autonomie (estimée)",
+    dash_editor_section_modes: "Autonomie par mode de conduite (pastilles)",
+    dash_editor_show_range_pills: "Afficher l'autonomie par mode sous forme de pastilles",
+    dash_editor_mode_colors_hint: "Attribuez une couleur à chaque mode (comme dans l'app Bosch Flow). « Auto » utilise la couleur Bosch par défaut.",
+    dash_editor_modes_none: "Aucun capteur d'autonomie par mode détecté pour l'instant. Ils apparaissent une fois les données du vélo chargées.",
+    dash_editor_color_auto: "Auto (défaut Bosch)",
+    color_red: "Rouge",
+    color_orange: "Orange",
+    color_yellow: "Jaune",
+    color_green: "Vert",
+    color_turquoise: "Turquoise",
+    color_blue: "Bleu",
+    color_purple: "Violet",
+    color_magenta: "Magenta",
+    dash_editor_range: "Entité d'autonomie estimée (optionnelle)",
+    dash_editor_range_hint: "Capteur \"Autonomie estimée (actuelle)\" de l'intégration. Vide = détection automatique ; sans valeur, la tuile est masquée.",
     dash_label_target_soc: "Arrêter la charge à",
     dash_state_charging: "En charge",
     dash_state_not_charging: "Pas en charge",
@@ -1107,6 +1304,34 @@ const I18N = {
     map3d_editor_show_elevation: "Afficher l'altitude",
     map3d_editor_stats_as_chips: "Stats en puces overlay (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = distance, vitesse et altitude affichées en puces en haut à gauche à côté de la date et de l'heure. 0 = garder la ligne de stats classique dans la barre du bas (défaut).",
+    rp_card_name: "Planificateur d'itinéraires Bosch eBike",
+    rp_card_desc: "Planifier des itinéraires vélo avec BRouter : estimation de consommation, contrôle de batterie et export GPX",
+    rp_default_title: "Planificateur d'itinéraires",
+    rp_hint_click: "Cliquez sur la carte pour définir le départ et l'arrivée — des clics supplémentaires ajoutent des points intermédiaires. Glisser un marqueur = déplacer, cliquer sur un marqueur = supprimer.",
+    rp_profile_label: "Profil",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Vélo de route",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Le plus court",
+    rp_reset: "Réinitialiser",
+    rp_export_gpx: "Exporter en GPX",
+    rp_routing: "Calcul de l'itinéraire …",
+    rp_stat_distance: "Distance",
+    rp_stat_ascent: "Montée",
+    rp_stat_descent: "Descente",
+    rp_stat_time: "Temps de trajet",
+    rp_stat_energy: "Consommation estimée",
+    rp_batt_line: (wh, pct, soc) => `Nécessite ~${wh} Wh ≈ ${pct} % · batterie actuelle : ${soc} %`,
+    rp_estimate_note: "Estimation basée sur votre consommation moyenne — l'autonomie réelle dépend du mode d'assistance, du relief, du vent et de la température.",
+    rp_hilly_note: "Beaucoup de dénivelé sur cet itinéraire — l'estimation peut être trop optimiste.",
+    rp_err_no_route: "Aucun itinéraire trouvé (point hors du réseau routier ou hors de la zone couverte ?)",
+    rp_err_server: "Serveur de routage injoignable",
+    rp_privacy_note: "Les points de passage sont envoyés au serveur BRouter configuré (par défaut : brouter.de).",
+    rp_editor_brouter_url: "Serveur BRouter (optionnel)",
+    rp_editor_entity: "Capteur d'autonomie (optionnel)",
+    rp_editor_entity_hint: "Source de la consommation moyenne et de la capacité de la batterie — détection automatique si vide.",
+    rp_editor_soc: "Capteur de charge en direct (optionnel)",
+    rp_editor_soc_hint: "Niveau de charge actuel pour le contrôle de batterie — si vide, valeur des capteurs d'autonomie.",
   },
   it: {
     // Main card
@@ -1130,7 +1355,7 @@ const I18N = {
     // Map controls
     btn_change_style: "Cambia stile mappa",
     btn_wiki: "Articoli Wikipedia",
-    btn_poi: "Stazioni di ricarica, officine, acqua potabile, bagni",
+    btn_poi: "Stazioni di ricarica, officine, acqua potabile, bagni, ristorazione",
     btn_gpx: "Scarica GPX",
     btn_chase: "Riproduzione chase-cam",
     editor_chase_section: "Riproduzione chase-cam (condivisa)",
@@ -1187,6 +1412,18 @@ const I18N = {
     poi_water: "Acqua potabile",
     poi_toilet: "Bagno",
     poi_open_osm: "Apri su OpenStreetMap",
+    poi_food: "Ristorante",
+    poi_cafe: "Caffè",
+    poi_biergarten: "Birreria all'aperto",
+    rp_poi_btn: "Mostra i POI lungo il percorso (ricarica, officina, acqua, bagni, ristorazione)",
+    rp_poi_error: "Impossibile caricare i POI",
+    rp_save_btn: "Salva percorso",
+    rp_routes_btn: "Percorsi salvati",
+    rp_name_placeholder: "Nome del percorso",
+    rp_save_ok: "Percorso salvato",
+    rp_save_cancel: "Annulla",
+    rp_no_saved: "Nessun percorso salvato finora",
+    rp_load_failed: "Impossibile caricare i percorsi salvati",
     // Editor
     editor_height: "Altezza della scheda (px)",
     editor_title: "Titolo (opzionale)",
@@ -1198,7 +1435,7 @@ const I18N = {
     editor_wiki_radius: "Raggio di ricerca Wikipedia",
     editor_wiki_radius_hint: "Fino a che distanza intorno a ogni punto del percorso vengono cercati articoli Wikipedia. Raggio più ampio = più risultati, più dati.",
     editor_poi_radius: "Raggio di ricerca POI",
-    editor_poi_radius_hint: "Fino a che distanza intorno al percorso vengono cercati stazioni di ricarica, officine, acqua potabile e bagni.",
+    editor_poi_radius_hint: "Fino a che distanza intorno al percorso vengono cercati stazioni di ricarica, officine, acqua potabile, bagni e ristorazione.",
     editor_select_all: "Tutti",
     radius_default_suffix: "(predefinito)",
     // Heatmap card
@@ -1249,6 +1486,22 @@ const I18N = {
     dash_label_last_tour: "Ultima uscita",
     dash_label_battery: "Batteria",
     dash_label_charge_power: "Potenza di ricarica",
+    dash_label_range: "Autonomia (stimata)",
+    dash_editor_section_modes: "Autonomia per modalità di guida (pillole)",
+    dash_editor_show_range_pills: "Mostra l'autonomia per modalità come pillole",
+    dash_editor_mode_colors_hint: "Assegna un colore a ciascuna modalità (come nell'app Bosch Flow). \"Auto\" usa il colore predefinito Bosch.",
+    dash_editor_modes_none: "Nessun sensore di autonomia per modalità rilevato finora. Compaiono una volta caricati i dati della bici.",
+    dash_editor_color_auto: "Auto (predefinito Bosch)",
+    color_red: "Rosso",
+    color_orange: "Arancione",
+    color_yellow: "Giallo",
+    color_green: "Verde",
+    color_turquoise: "Turchese",
+    color_blue: "Blu",
+    color_purple: "Viola",
+    color_magenta: "Magenta",
+    dash_editor_range: "Entità autonomia stimata (opzionale)",
+    dash_editor_range_hint: "Sensore \"Autonomia stimata (attuale)\" dell'integrazione. Vuoto = rilevamento automatico; senza valore la tessera viene nascosta.",
     dash_label_target_soc: "Interrompi ricarica a",
     dash_state_charging: "In carica",
     dash_state_not_charging: "Non in carica",
@@ -1388,6 +1641,34 @@ const I18N = {
     map3d_editor_show_elevation: "Mostra altitudine",
     map3d_editor_stats_as_chips: "Statistiche come chip overlay (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = distanza, velocità e altitudine come chip in alto a sinistra accanto a data e ora. 0 = riga statistiche classica nella barra inferiore (default).",
+    rp_card_name: "Pianificatore di percorsi Bosch eBike",
+    rp_card_desc: "Pianifica percorsi in bici con BRouter: stima dei consumi, controllo batteria ed esportazione GPX",
+    rp_default_title: "Pianificatore di percorsi",
+    rp_hint_click: "Clicca sulla mappa per impostare partenza e destinazione — altri clic aggiungono punti intermedi. Trascina un marcatore per spostarlo, cliccalo per eliminarlo.",
+    rp_profile_label: "Profilo",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Bici da corsa",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Più breve",
+    rp_reset: "Reimposta",
+    rp_export_gpx: "Esporta GPX",
+    rp_routing: "Calcolo del percorso …",
+    rp_stat_distance: "Distanza",
+    rp_stat_ascent: "Salita",
+    rp_stat_descent: "Discesa",
+    rp_stat_time: "Tempo di percorrenza",
+    rp_stat_energy: "Consumo stimato",
+    rp_batt_line: (wh, pct, soc) => `Servono ~${wh} Wh ≈ ${pct} % · batteria attuale: ${soc} %`,
+    rp_estimate_note: "Stima basata sul tuo consumo medio — l'autonomia reale dipende da modalità di assistenza, terreno, vento e temperatura.",
+    rp_hilly_note: "Molto dislivello su questo percorso — la stima potrebbe essere troppo ottimistica.",
+    rp_err_no_route: "Nessun percorso trovato (punto fuori dalla rete stradale o fuori dall'area coperta?)",
+    rp_err_server: "Server di routing non raggiungibile",
+    rp_privacy_note: "I punti del percorso vengono inviati al server BRouter configurato (predefinito: brouter.de).",
+    rp_editor_brouter_url: "Server BRouter (opzionale)",
+    rp_editor_entity: "Sensore di autonomia (opzionale)",
+    rp_editor_entity_hint: "Fonte del consumo medio e della capacità della batteria — rilevamento automatico se vuoto.",
+    rp_editor_soc: "Sensore di carica live (opzionale)",
+    rp_editor_soc_hint: "Livello di carica attuale per il controllo della batteria — se vuoto, valore dai sensori di autonomia.",
   },
   es: {
     // Main card
@@ -1411,7 +1692,7 @@ const I18N = {
     // Map controls
     btn_change_style: "Cambiar estilo de mapa",
     btn_wiki: "Artículos de Wikipedia",
-    btn_poi: "Estaciones de carga, talleres, agua potable, baños",
+    btn_poi: "Estaciones de carga, talleres, agua potable, baños, gastronomía",
     btn_gpx: "Descargar GPX",
     btn_chase: "Reproducción chase-cam",
     editor_chase_section: "Reproducción chase-cam (compartida)",
@@ -1468,6 +1749,18 @@ const I18N = {
     poi_water: "Agua potable",
     poi_toilet: "Baño",
     poi_open_osm: "Abrir en OpenStreetMap",
+    poi_food: "Restaurante",
+    poi_cafe: "Cafetería",
+    poi_biergarten: "Cervecería al aire libre",
+    rp_poi_btn: "Mostrar POI a lo largo de la ruta (carga, taller, agua, baños, gastronomía)",
+    rp_poi_error: "No se pudieron cargar los POI",
+    rp_save_btn: "Guardar ruta",
+    rp_routes_btn: "Rutas guardadas",
+    rp_name_placeholder: "Nombre de la ruta",
+    rp_save_ok: "Ruta guardada",
+    rp_save_cancel: "Cancelar",
+    rp_no_saved: "Aún no hay rutas guardadas",
+    rp_load_failed: "No se pudieron cargar las rutas guardadas",
     // Editor
     editor_height: "Altura de la tarjeta (px)",
     editor_title: "Título (opcional)",
@@ -1479,7 +1772,7 @@ const I18N = {
     editor_wiki_radius: "Radio de búsqueda de Wikipedia",
     editor_wiki_radius_hint: "Hasta qué distancia alrededor de cada punto de la ruta se buscan artículos de Wikipedia. Radio mayor = más resultados, más datos.",
     editor_poi_radius: "Radio de búsqueda POI",
-    editor_poi_radius_hint: "Hasta qué distancia alrededor de la ruta se buscan estaciones de carga, talleres, agua potable y baños.",
+    editor_poi_radius_hint: "Hasta qué distancia alrededor de la ruta se buscan estaciones de carga, talleres, agua potable, baños y gastronomía.",
     editor_select_all: "Todos",
     radius_default_suffix: "(predeterminado)",
     // Heatmap card
@@ -1530,6 +1823,22 @@ const I18N = {
     dash_label_last_tour: "Última ruta",
     dash_label_battery: "Batería",
     dash_label_charge_power: "Potencia de carga",
+    dash_label_range: "Autonomía (estimada)",
+    dash_editor_section_modes: "Autonomía por modo de conducción (píldoras)",
+    dash_editor_show_range_pills: "Mostrar la autonomía por modo como píldoras",
+    dash_editor_mode_colors_hint: "Asigna un color a cada modo (como en la app Bosch Flow). \"Auto\" usa el color predeterminado de Bosch.",
+    dash_editor_modes_none: "Aún no se detectan sensores de autonomía por modo. Aparecen cuando se cargan los datos de la bici.",
+    dash_editor_color_auto: "Auto (predeterminado Bosch)",
+    color_red: "Rojo",
+    color_orange: "Naranja",
+    color_yellow: "Amarillo",
+    color_green: "Verde",
+    color_turquoise: "Turquesa",
+    color_blue: "Azul",
+    color_purple: "Morado",
+    color_magenta: "Magenta",
+    dash_editor_range: "Entidad de autonomía estimada (opcional)",
+    dash_editor_range_hint: "Sensor \"Autonomía estimada (actual)\" de la integración. Vacío = detección automática; sin valor, la ficha se oculta.",
     dash_label_target_soc: "Detener carga al",
     dash_state_charging: "Cargando",
     dash_state_not_charging: "Sin carga",
@@ -1669,6 +1978,34 @@ const I18N = {
     map3d_editor_show_elevation: "Mostrar altitud",
     map3d_editor_stats_as_chips: "Estadísticas como chips overlay (1 / 0)",
     map3d_editor_stats_as_chips_hint: "1 = distancia, velocidad y altitud como chips arriba a la izquierda junto a fecha y hora. 0 = línea de estadísticas clásica en la barra inferior (por defecto).",
+    rp_card_name: "Planificador de rutas Bosch eBike",
+    rp_card_desc: "Planifica rutas en bici con BRouter: estimación de consumo, control de batería y exportación GPX",
+    rp_default_title: "Planificador de rutas",
+    rp_hint_click: "Haz clic en el mapa para fijar inicio y destino — más clics añaden puntos intermedios. Arrastra un marcador para moverlo, haz clic en él para eliminarlo.",
+    rp_profile_label: "Perfil",
+    rp_profile_trekking: "Trekking",
+    rp_profile_fastbike: "Bicicleta de carretera",
+    rp_profile_mtb: "MTB",
+    rp_profile_shortest: "Más corta",
+    rp_reset: "Restablecer",
+    rp_export_gpx: "Exportar GPX",
+    rp_routing: "Calculando la ruta …",
+    rp_stat_distance: "Distancia",
+    rp_stat_ascent: "Subida",
+    rp_stat_descent: "Bajada",
+    rp_stat_time: "Tiempo de viaje",
+    rp_stat_energy: "Consumo estimado",
+    rp_batt_line: (wh, pct, soc) => `Necesita ~${wh} Wh ≈ ${pct} % · batería actual: ${soc} %`,
+    rp_estimate_note: "Estimación basada en tu consumo medio — la autonomía real depende del modo de asistencia, el terreno, el viento y la temperatura.",
+    rp_hilly_note: "Mucho desnivel en esta ruta — la estimación puede ser demasiado optimista.",
+    rp_err_no_route: "No se encontró ninguna ruta (¿punto fuera de la red de caminos o fuera de la zona cubierta?)",
+    rp_err_server: "Servidor de rutas no accesible",
+    rp_privacy_note: "Los puntos de ruta se envían al servidor BRouter configurado (por defecto: brouter.de).",
+    rp_editor_brouter_url: "Servidor BRouter (opcional)",
+    rp_editor_entity: "Sensor de autonomía (opcional)",
+    rp_editor_entity_hint: "Fuente del consumo medio y la capacidad de la batería — detección automática si está vacío.",
+    rp_editor_soc: "Sensor de carga en vivo (opcional)",
+    rp_editor_soc_hint: "Nivel de carga actual para la comprobación de batería — si está vacío, valor de los sensores de autonomía.",
   },
 };
 
@@ -1785,10 +2122,21 @@ function ensureLeaflet() {
     if (existing) {
       const finish = () => {
         if (window.L && typeof window.L.map === "function") resolve(window.L);
-        else reject(new Error("Leaflet wurde geladen, ist aber nicht verfügbar"));
+        else {
+          // Tag auch hier entfernen: load/error feuern nie wieder,
+          // ein Retry an diesem Tag würde sonst ewig hängen.
+          existing.remove();
+          reject(new Error("Leaflet wurde geladen, ist aber nicht verfügbar"));
+        }
       };
       existing.addEventListener("load", finish, { once: true });
-      existing.addEventListener("error", () => reject(new Error("Leaflet konnte nicht geladen werden")), { once: true });
+      existing.addEventListener("error", () => {
+        // Totes Script-Tag entfernen, damit der nächste Versuch ein
+        // frisches injiziert (sonst hinge er ewig an einem Tag, dessen
+        // load/error-Events längst gefeuert haben).
+        existing.remove();
+        reject(new Error("Leaflet konnte nicht geladen werden"));
+      }, { once: true });
       if (window.L && typeof window.L.map === "function") finish();
       return;
     }
@@ -1798,10 +2146,22 @@ function ensureLeaflet() {
     script.async = true;
     script.onload = () => {
       if (window.L && typeof window.L.map === "function") resolve(window.L);
-      else reject(new Error("Leaflet wurde geladen, ist aber nicht verfügbar"));
+      else {
+        script.remove();
+        reject(new Error("Leaflet wurde geladen, ist aber nicht verfügbar"));
+      }
     };
-    script.onerror = () => reject(new Error("Leaflet konnte nicht geladen werden"));
+    script.onerror = () => {
+      script.remove();
+      reject(new Error("Leaflet konnte nicht geladen werden"));
+    };
     document.head.appendChild(script);
+  }).catch((err) => {
+    // Fehlgeschlagenen Ladeversuch NICHT cachen — sonst liefe jeder
+    // Retry (z. B. nach kurzem CDN-Ausfall) für immer in dieselbe
+    // rejected Promise. Nächster Aufruf startet einen frischen Versuch.
+    window.__ebikeLeafletPromise = null;
+    throw err;
   });
 
   return window.__ebikeLeafletPromise;
@@ -2533,6 +2893,9 @@ class BoschEBikeMapCard extends HTMLElement {
       .eb-poi-marker.eb-poi-bicycle  { border:1.5px solid #c62828; }
       .eb-poi-marker.eb-poi-water    { border:1.5px solid #1565c0; }
       .eb-poi-marker.eb-poi-toilet   { border:1.5px solid #6a1b9a; }
+      .eb-poi-marker.eb-poi-food       { border:1.5px solid #e65100; }
+      .eb-poi-marker.eb-poi-cafe       { border:1.5px solid #5d4037; }
+      .eb-poi-marker.eb-poi-biergarten { border:1.5px solid #f9a825; }
       .eb-poi-popup { font-family:inherit; max-width:240px; font-size:13px; }
       .eb-poi-popup .eb-poi-title { font-weight:600; margin-bottom:4px; }
       .eb-poi-popup .eb-poi-cat { font-size:11px; color:#666; margin-bottom:6px; }
@@ -3642,8 +4005,10 @@ class BoschEBikeMapCard extends HTMLElement {
   async _loadAndRenderPoi() {
     if (!this._currentTrackActivityId || !this._currentTrack.length) return;
     const aid = this._currentTrackActivityId;
-    // Cache key includes the radius so different radii don't collide
-    const cacheKey = `eb-poi-${aid}-${this._poiRadius || 1000}`;
+    // Cache key includes the radius so different radii don't collide, and
+    // the category list so adding a category invalidates stale cached results
+    // (pre-gastronomy caches would otherwise hide the new POIs).
+    const cacheKey = `eb-poi-${aid}-${this._poiRadius || 1000}-${RP_POI_CATEGORIES.join(",")}`;
 
     let pois = this._poiData.get(aid);
     if (!pois || pois.length === 0) {
@@ -3702,6 +4067,7 @@ class BoschEBikeMapCard extends HTMLElement {
       const res = await this._hass.callWS({
         type: "bosch_ebike/get_pois",
         south, west, north, east,
+        categories: RP_POI_CATEGORIES,
       });
       elements = (res && Array.isArray(res.elements)) ? res.elements : [];
     } catch (err) {
@@ -3760,6 +4126,15 @@ class BoschEBikeMapCard extends HTMLElement {
     }
     if (tags.amenity === "toilets") {
       return { key: "toilet", label: this._t("poi_toilet"), icon: "🚻" };
+    }
+    if (tags.amenity === "restaurant" || tags.amenity === "fast_food") {
+      return { key: "food", label: this._t("poi_food"), icon: "🍽️" };
+    }
+    if (tags.amenity === "cafe") {
+      return { key: "cafe", label: this._t("poi_cafe"), icon: "☕" };
+    }
+    if (tags.amenity === "biergarten") {
+      return { key: "biergarten", label: this._t("poi_biergarten"), icon: "🍺" };
     }
     return null;
   }
@@ -6272,6 +6647,136 @@ class BoschEBikeCalendarCardEditor extends BoschEBikeMapCardEditor {
 // ===========================================================================
 // Dashboard card: user-uploaded image + live ESPHome data + smart-plug control
 // ===========================================================================
+// Bosch internal assist-mode application codes -> display name. Mirrors the
+// integration's profile_extra mapping; used as a frontend fallback so that
+// older integration builds (whose reachable-range entity_id still carries the
+// raw code, e.g. "…_reachable_range_a100m0auto") still show a clean label and
+// match the default colours.
+const BOSCH_ASSIST_MODE_NAMES = {
+  A100M00040: "ECO",
+  A100ECOP37: "ECO+",
+  A100M00030: "TOUR",
+  A100MAAAA0: "TOUR+",
+  A100M00020: "SPORT",
+  A100M00010: "TURBO",
+  A100M0AUTO: "AUTO",
+  A100EAAAB0: "eMTB",
+  A100MSPIC7: "eMTB+",
+  A100MAAAB0: "eMTB-shortcrank",
+};
+
+// --- Bosch assist-mode colours (range pills) --------------------------------
+// Vivid, Bosch-Flow-typical palette. Keys are stable config tokens; the hex
+// values approximate the colours the Flow app offers for custom ride modes.
+const BOSCH_MODE_COLORS = {
+  red: "#E2231A",
+  orange: "#F39200",
+  yellow: "#FFC107",
+  green: "#5FB733",
+  turquoise: "#00B3C8",
+  blue: "#1E9FE0",
+  purple: "#8A4FD3",
+  magenta: "#E5006D",
+};
+const BOSCH_MODE_COLOR_ORDER = [
+  "red", "orange", "yellow", "green", "turquoise", "blue", "purple", "magenta",
+];
+// Default mode-name -> colour key, matching the Flow app look out of the box.
+// Keyed by the display name the integration emits (see profile_extra).
+const BOSCH_MODE_DEFAULT_COLOR = {
+  TURBO: "red",
+  SPORT: "orange",
+  "eMTB+": "purple",
+  eMTB: "purple",
+  "eMTB-shortcrank": "purple",
+  AUTO: "blue",
+  TOUR: "green",
+  "TOUR+": "turquoise",
+  ECO: "yellow",
+  "ECO+": "yellow",
+};
+
+// Black/white text for a given background hex via the YIQ contrast rule.
+function boschContrastColor(hex) {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex || "");
+  if (!m) return "#ffffff";
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 150 ? "#1c1c1c" : "#ffffff";
+}
+
+// Resolve a mode name to a hex colour: explicit config wins, else the Bosch
+// default for that mode, else null (render as a neutral pill).
+function boschModeColorHex(modeName, modeColorsCfg) {
+  const cfg = modeColorsCfg || {};
+  const key = cfg[modeName] || BOSCH_MODE_DEFAULT_COLOR[modeName];
+  return (key && BOSCH_MODE_COLORS[key]) ? BOSCH_MODE_COLORS[key] : null;
+}
+
+// Derive the assist-mode label of a reachable-range entity. Prefers the clean
+// `assist_mode` attribute (e.g. "AUTO"); falls back to the friendly name
+// ("… Reachable Range AUTO") and finally the entity_id suffix, so the card
+// still works on older integration builds that predate the attribute.
+function boschModeLabel(eid, attrs) {
+  const a = attrs || {};
+  let label = null;
+  if (a.assist_mode != null && String(a.assist_mode).trim()) {
+    label = String(a.assist_mode).trim();
+  } else {
+    const fn = a.friendly_name ? String(a.friendly_name) : "";
+    const m = /reachable\s*range\s+(.+)$/i.exec(fn);
+    if (m && m[1].trim()) {
+      label = m[1].trim();
+    } else {
+      const m2 = /reachable_range_(.+)$/.exec(eid);
+      if (m2 && m2[1]) label = m2[1].toUpperCase();
+    }
+  }
+  if (!label) return null;
+  // Normalise a raw Bosch code to its display name (no-op for clean labels).
+  return BOSCH_ASSIST_MODE_NAMES[label.toUpperCase()] || label;
+}
+
+// Auto-detect the per-mode reachable-range sensors of one bike. They are the
+// entities with `reachable_range` in the id (state = km); the mode label comes
+// from boschModeLabel (attribute or name). Detection does NOT require the
+// `assist_mode` attribute, so it works across integration versions. When an
+// anchor entity (battery/odometer) is set, results are PREFERRED on that bike's
+// device, but if nothing matches that device (e.g. the range sensors live on a
+// separate "drive unit" device) we fall back to all matches instead of showing
+// none. Sorted by entity_id so the order matches the integration sensor order.
+function boschReachableRanges(hass, anchorEntityId) {
+  if (!hass || !hass.states) return [];
+  const reg = hass.entities || null;
+  let anchorDevice = null;
+  if (anchorEntityId && reg && reg[anchorEntityId]) {
+    anchorDevice = reg[anchorEntityId].device_id || null;
+  }
+  const all = [];
+  for (const [eid, st] of Object.entries(hass.states)) {
+    if (!/reachable_range/.test(eid)) continue;
+    const a = (st && st.attributes) || {};
+    const mode = boschModeLabel(eid, a);
+    if (!mode) continue;
+    const km = Number(st.state);
+    const dev = (reg && reg[eid]) ? (reg[eid].device_id || null) : null;
+    all.push({
+      entity_id: eid,
+      mode,
+      km: Number.isFinite(km) ? km : null,
+      device_id: dev,
+    });
+  }
+  all.sort((x, y) => x.entity_id.localeCompare(y.entity_id));
+  let chosen = all;
+  if (anchorDevice) {
+    const same = all.filter((r) => r.device_id === anchorDevice);
+    if (same.length) chosen = same;
+  }
+  return chosen.map(({ device_id, ...r }) => r);
+}
+
 class BoschEBikeDashboardCard extends HTMLElement {
   constructor() {
     super();
@@ -6407,6 +6912,10 @@ class BoschEBikeDashboardCard extends HTMLElement {
       .dash-pill ha-icon { --mdc-icon-size: 18px; }
       .dash-pill.charging { background: rgba(76,175,80,.18); color: #2e7d32; }
       .dash-pill.charging ha-icon { color: #2e7d32; }
+      /* Per-mode reachable-range pills (colour set inline per mode). */
+      .dash-pill.range { gap: 8px; font-weight: 600; }
+      .dash-pill.range .mode { letter-spacing: .02em; }
+      .dash-pill.range .km { font-weight: 500; opacity: .92; font-variant-numeric: tabular-nums; }
       .dash-controls {
         display: flex; gap: 10px; margin: 14px 0 12px; flex-wrap: wrap;
       }
@@ -6637,6 +7146,28 @@ class BoschEBikeDashboardCard extends HTMLElement {
     return v.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " %";
   }
 
+  // Geschätzte Restreichweite in km: explizit konfigurierter Sensor
+  // (range_entity) oder Auto-Erkennung des Integrations-Sensors
+  // "Estimated Range (Current)". null = keine Kachel anzeigen.
+  _estimatedRangeKm(cfg) {
+    const states = this._hass && this._hass.states ? this._hass.states : null;
+    if (!states) return null;
+    let ent = cfg.range_entity;
+    if (!ent) {
+      // Treffer cachen; bei "nicht gefunden" weiter suchen, damit ein erst
+      // später angelegter Sensor ohne Card-Neuaufbau erscheint.
+      if (!this._rangeAutoEntity || !states[this._rangeAutoEntity]) {
+        this._rangeAutoEntity =
+          boschRangeEntityIds(this._hass, "estimated_range_current")[0] || null;
+      }
+      ent = this._rangeAutoEntity;
+    }
+    const st = ent ? states[ent] : null;
+    if (!st) return null;
+    const v = Number(st.state);
+    return Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
+  }
+
   _render() {
     if (!this._built || !this._hass) return;
 
@@ -6708,6 +7239,17 @@ class BoschEBikeDashboardCard extends HTMLElement {
       if (cfg.last_tour_distance_entity) {
         tiles.push({ icon: "mdi:map-marker-distance", label: this._t("dash_label_last_tour"), val: this._formatKm(lastTour) });
       }
+      // Geschätzte Restreichweite (Sensor "Estimated Range (Current)" der
+      // Integration). Explizit via range_entity, sonst Auto-Erkennung; ohne
+      // Wert keine Kachel. "≈" markiert den Schätzungs-Charakter.
+      const rangeKm = this._estimatedRangeKm(cfg);
+      if (rangeKm != null) {
+        tiles.push({
+          icon: "mdi:road-variant",
+          label: this._t("dash_label_range"),
+          val: `≈ ${rangeKm} km`,
+        });
+      }
       if (cfg.charge_power_entity) {
         tiles.push({
           icon: "mdi:flash",
@@ -6732,6 +7274,31 @@ class BoschEBikeDashboardCard extends HTMLElement {
     const pills = this.querySelector("#dash-pills");
     if (pills) {
       pills.innerHTML = "";
+
+      // Reichweite je Fahrmodus als farbige Piles (vor Lade-/Akku-Pille).
+      // Farben pro Modus aus der Karten-Konfig (mode_colors) bzw. Bosch-Default.
+      // Schalter ist nur ein Opt-out; Default (Schlüssel fehlt) = anzeigen.
+      if (cfg.show_range_pills !== false) {
+        const anchor = cfg.battery_entity || cfg.odometer_entity
+          || cfg.charging_entity || cfg.range_entity;
+        for (const r of boschReachableRanges(this._hass, anchor)) {
+          if (r.km == null) continue;
+          const hex = boschModeColorHex(r.mode, cfg.mode_colors);
+          const rp = document.createElement("span");
+          rp.className = "dash-pill range";
+          if (hex) { rp.style.background = hex; rp.style.color = boschContrastColor(hex); }
+          const m = document.createElement("span");
+          m.className = "mode";
+          m.textContent = r.mode;
+          const km = document.createElement("span");
+          km.className = "km";
+          km.textContent = this._formatKm(r.km);
+          rp.appendChild(m);
+          rp.appendChild(km);
+          pills.appendChild(rp);
+        }
+      }
+
       const stateLabel = isCharging == null
         ? this._t("dash_state_unknown")
         : isCharging ? this._t("dash_state_charging") : this._t("dash_state_not_charging");
@@ -7216,6 +7783,18 @@ class BoschEBikeDashboardCardEditor extends HTMLElement {
       this._sharedSettingsHandler = () => this._syncSharedFields();
       _cardSettingsBus.addEventListener("changed", this._sharedSettingsHandler);
     }
+    // Rebuild the per-mode colour rows only when the detected mode set
+    // actually changes (e.g. the range sensors load after the editor opened).
+    // Guarded so an open dropdown is not reset on every hass tick.
+    if (this._modeColorsWrap) {
+      const anchor = this._config.battery_entity || this._config.odometer_entity
+        || this._config.charging_entity || this._config.range_entity;
+      const key = boschReachableRanges(hass, anchor).map((r) => r.mode).join("|");
+      if (key !== this._modeColorsKey) {
+        this._modeColorsKey = key;
+        this._renderModeColorRows();
+      }
+    }
   }
 
   disconnectedCallback() {
@@ -7248,12 +7827,87 @@ class BoschEBikeDashboardCardEditor extends HTMLElement {
   }
 
   _emit() {
-    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: this._config } }));
+    // Emit a fresh snapshot so HA always stores the current state (a shared
+    // mutable reference could be missed for boolean / removed keys).
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: { ...this._config } },
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   _entities(filter) {
     if (!this._hass) return [];
     return Object.keys(this._hass.states).filter(filter).sort();
+  }
+
+  // Build one "mode -> colour" row per detected reachable-range mode.
+  _renderModeColorRows() {
+    const cont = this._modeColorsWrap;
+    if (!cont) return;
+    cont.innerHTML = "";
+    const anchor = this._config.battery_entity || this._config.odometer_entity
+      || this._config.charging_entity || this._config.range_entity;
+    const modes = boschReachableRanges(this._hass, anchor);
+    if (!modes.length) {
+      const none = document.createElement("small");
+      none.textContent = this._t("dash_editor_modes_none");
+      none.style.cssText = "color:var(--secondary-text-color);font-size:11px;";
+      cont.appendChild(none);
+      return;
+    }
+    const seen = new Set();
+    for (const r of modes) {
+      if (seen.has(r.mode)) continue;
+      seen.add(r.mode);
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;gap:10px;";
+
+      const swatch = document.createElement("span");
+      swatch.style.cssText = "width:16px;height:16px;border-radius:4px;flex:0 0 auto;border:1px solid var(--divider-color);";
+
+      const name = document.createElement("span");
+      name.textContent = r.mode;
+      name.style.cssText = "flex:1;font-size:13px;font-weight:600;";
+
+      const sel = document.createElement("select");
+      sel.style.cssText = "padding:6px;border-radius:4px;border:1px solid var(--divider-color);background:var(--card-background-color);color:var(--primary-text-color);";
+      const optAuto = document.createElement("option");
+      optAuto.value = "";
+      optAuto.textContent = this._t("dash_editor_color_auto");
+      sel.appendChild(optAuto);
+      for (const key of BOSCH_MODE_COLOR_ORDER) {
+        const o = document.createElement("option");
+        o.value = key;
+        o.textContent = this._t("color_" + key);
+        sel.appendChild(o);
+      }
+      sel.value = (this._config.mode_colors && this._config.mode_colors[r.mode]) || "";
+
+      const applySwatch = () => {
+        const hex = boschModeColorHex(r.mode, sel.value ? { [r.mode]: sel.value } : {});
+        swatch.style.background = hex || "var(--secondary-background-color)";
+      };
+      applySwatch();
+
+      sel.addEventListener("change", () => {
+        // Immutable update (same reasoning as the show_range_pills toggle).
+        const mc = { ...(this._config.mode_colors || {}) };
+        if (sel.value) mc[r.mode] = sel.value;
+        else delete mc[r.mode];
+        const next = { ...this._config };
+        if (Object.keys(mc).length) next.mode_colors = mc;
+        else delete next.mode_colors;
+        this._config = next;
+        applySwatch();
+        this._emit();
+      });
+
+      row.appendChild(swatch);
+      row.appendChild(name);
+      row.appendChild(sel);
+      cont.appendChild(row);
+    }
   }
 
   _build() {
@@ -7432,6 +8086,8 @@ class BoschEBikeDashboardCardEditor extends HTMLElement {
         (e) => e.startsWith("binary_sensor.") || e.startsWith("sensor.")),
       last_tour_distance_entity: mkEntity("last_tour_distance_entity", "dash_editor_last_tour", null,
         (e) => e.startsWith("sensor.")),
+      range_entity: mkEntity("range_entity", "dash_editor_range", "dash_editor_range_hint",
+        (e) => e.startsWith("sensor.")),
       charge_power_entity: mkEntity("charge_power_entity", "dash_editor_charge_power", null,
         (e) => e.startsWith("sensor.")),
       charge_switch_entity: mkEntity("charge_switch_entity", "dash_editor_charge_switch", null,
@@ -7439,6 +8095,43 @@ class BoschEBikeDashboardCardEditor extends HTMLElement {
       target_soc_entity: mkEntity("target_soc_entity", "dash_editor_target_soc", "dash_editor_target_soc_hint",
         (e) => e.startsWith("input_number.")),
     };
+
+    // --- Reichweite je Fahrmodus (Piles) -------------------------------------
+    const rangeHead = document.createElement("div");
+    rangeHead.textContent = this._t("dash_editor_section_modes");
+    rangeHead.style.cssText =
+      "margin-top:14px;padding-top:10px;border-top:1px solid var(--divider-color);" +
+      "color:var(--secondary-text-color);font-size:12px;line-height:1.4;font-weight:600;";
+    wrap.appendChild(rangeHead);
+
+    const rangeToggleWrap = document.createElement("label");
+    rangeToggleWrap.style.cssText = "display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;";
+    const rangeToggle = document.createElement("input");
+    rangeToggle.type = "checkbox";
+    rangeToggle.checked = this._config.show_range_pills !== false;
+    rangeToggle.addEventListener("change", () => {
+      // Immutable update: replace _config with a NEW object carrying an
+      // explicit boolean. HA's edit dialog tracks the config by identity /
+      // value; mutating in place was not reliably picked up for this control,
+      // and an explicit boolean (never delete) survives HA's config merge.
+      this._config = { ...this._config, show_range_pills: rangeToggle.checked };
+      this._emit();
+    });
+    rangeToggleWrap.appendChild(rangeToggle);
+    const rangeToggleLbl = document.createElement("span");
+    rangeToggleLbl.textContent = this._t("dash_editor_show_range_pills");
+    rangeToggleWrap.appendChild(rangeToggleLbl);
+    wrap.appendChild(rangeToggleWrap);
+
+    const modeHint = document.createElement("small");
+    modeHint.textContent = this._t("dash_editor_mode_colors_hint");
+    modeHint.style.cssText = "color:var(--secondary-text-color);font-size:11px;";
+    wrap.appendChild(modeHint);
+
+    this._modeColorsWrap = document.createElement("div");
+    this._modeColorsWrap.style.cssText = "display:flex;flex-direction:column;gap:8px;margin-top:4px;";
+    wrap.appendChild(this._modeColorsWrap);
+    this._renderModeColorRows();
 
     // --- CO2 / Fahrzeug-Vergleich --------------------------------------------
     const co2Head = document.createElement("div");
@@ -10765,6 +11458,1421 @@ class BoschEBike3DMapCardEditor extends HTMLElement {
   }
 }
 
+// ===========================================================================
+// Route-Planner-Card — Wegpunkte klicken, Routing via Backend-Proxy
+// (bosch_ebike/plan_route → BRouter), Verbrauchs-Schätzung + Akku-Check,
+// Höhenprofil-SVG und GPX-Export. Editor + Registrierung folgen in Task 5.
+// ===========================================================================
+const RP_MAX_WAYPOINTS = 30; // muss zum Backend-Limit in brouter.py passen
+const RP_PROFILES = ["trekking", "fastbike", "mtb", "shortest"];
+// POI-Kategorien für den Routenplaner: wie die Map-Card plus Gastronomie
+// (muss zur Whitelist POI_CATEGORY_SELECTORS im Backend passen).
+const RP_POI_CATEGORIES = ["charging", "bicycle", "water", "toilets", "food"];
+const RP_POI_RADIUS_M = 500; // POIs max. 500 m neben der Route
+
+// Sprachunabhängige Erkennung der Reichweiten-Sensoren. Entity-IDs werden
+// aus dem ÜBERSETZTEN Namen erzeugt (deutsche Instanz →
+// sensor.…_geschatzte_reichweite_aktuell), ein englischer Suffix-Match
+// reicht daher nicht. Primär über die Frontend-Entity-Registry
+// (platform + translation_key), Fallback: englisches ID-Suffix.
+function boschRangeEntityIds(hass, translationKey) {
+  const ids = [];
+  const reg = hass && hass.entities ? hass.entities : null;
+  if (reg) {
+    for (const id in reg) {
+      const e = reg[id];
+      if (e && e.platform === "ha_bosch_ebike" && e.translation_key === translationKey) {
+        ids.push(id);
+      }
+    }
+  }
+  if (!ids.length && hass && hass.states) {
+    for (const id in hass.states) {
+      if (id.startsWith("sensor.") && id.endsWith("_" + translationKey)) ids.push(id);
+    }
+  }
+  return ids;
+}
+
+class BoschEBikeRoutePlannerCard extends HTMLElement {
+  constructor() {
+    super();
+    this._hass = null;
+    this._config = {};
+    this._map = null;
+    this._baseLayer = null;
+    this._routeGroup = null;
+    this._waypoints = [];          // L.marker[], in Klick-Reihenfolge
+    this._profile = "trekking";
+    this._routeSeq = 0;            // verwirft veraltete plan_route-Antworten
+    this._debounceTimer = null;
+    this._lastRouteCoords = null;  // [[lon, lat, ele], …] der letzten Route
+    this._lastRouteProps = null;   // properties der letzten Route (für Re-Render)
+    this._lastRangeSig = "";       // zuletzt gerenderte Verbrauchs-/SoC-Daten
+    this._fitPending = false;      // fitBounds einmalig nach Wegpunkt-Änderung
+    this._ready = false;           // Boot komplett (Leaflet geladen, Map steht)
+    this._domBuilt = false;
+    this._booting = false;
+    this._bootErrorShown = false; // Boot-Fehler nur einmal loggen/anzeigen
+    // POI-Overlay entlang der Route (eigener localStorage-Key, unabhängig
+    // vom 📍-Toggle der Map-Card)
+    this._poiEnabled = (typeof localStorage !== "undefined" && localStorage.getItem("eb-rp-poi-enabled") === "1");
+    this._poiGroup = null;         // L.layerGroup mit den POI-Markern
+    this._poiCache = new Map();    // bbox+Kategorien → rohe Overpass-Elemente
+    this._poiSeq = 0;              // verwirft veraltete get_pois-Antworten
+    // Gespeicherte Routen (HA-Storage): id + Name der aktuell geladenen
+    // Route — einfache Felder, überleben Map-Rebuilds (das DOM bleibt
+    // bei disconnect/reconnect stehen, nur die Leaflet-Map wird neu gebaut).
+    this._loadedRouteId = null;
+    this._loadedRouteName = null;
+  }
+
+  setConfig(config) {
+    this._config = { height: config.height || 480, ...config };
+    if (this._domBuilt) this._applyTitle();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (!this._ready) {
+      // Erst-Boot bzw. neuer Versuch nach fehlgeschlagenem Boot
+      // (z. B. Leaflet-CDN kurz nicht erreichbar).
+      if (!this._booting) this._boot();
+      return;
+    }
+    // Live-SoC: ändert sich der Akkustand (oder Ø-Verbrauch/Kapazität),
+    // während eine Route angezeigt wird, Akku-Zeile + Verbrauch auffrischen.
+    if (this._lastRouteProps) {
+      const r = this._rangeData();
+      const sig = r ? `${r.whPerKm}|${r.capacityWh}|${r.soc}` : "";
+      if (sig !== this._lastRangeSig) this._renderStats(this._lastRouteProps);
+    }
+  }
+
+  getCardSize() {
+    return Math.ceil((parseInt(this._config.height, 10) || 480) / 50) + 3;
+  }
+
+  static getConfigElement() {
+    return document.createElement("bosch-ebike-routeplanner-card-editor");
+  }
+
+  static getStubConfig() {
+    return { height: 480 };
+  }
+
+  _t(key, ...args) {
+    return ebT(this._hass, key, ...args);
+  }
+
+  async _boot() {
+    if (this._booting || this._ready) return;
+    this._booting = true;
+    try {
+      if (!this._domBuilt) {
+        this._buildDOM();
+        this._domBuilt = true;
+      }
+      this._applyTitle();
+      await ensureLeaflet();
+      this._createMap();
+      // Erst nach erfolgreichem Map-Aufbau "fertig" — schlägt der Boot
+      // fehl, bleibt _ready false und die nächste hass-Zuweisung (bzw.
+      // connectedCallback) startet einen neuen Versuch.
+      this._ready = !!this._map;
+      if (this._ready) {
+        this._setStatus(null);
+        this._bootErrorShown = false;
+      }
+    } catch (err) {
+      // Jede hass-Zuweisung stößt bei !_ready einen neuen Boot-Versuch an —
+      // ohne Drossel würde ein anhaltender CDN-Ausfall die Konsole fluten.
+      if (!this._bootErrorShown) {
+        this._bootErrorShown = true;
+        console.error("[Bosch eBike Routeplanner] boot error", err);
+        this._setStatus(this._t("msg_error_prefix") + (err?.message || err), "");
+      }
+    } finally {
+      this._booting = false;
+    }
+  }
+
+  connectedCallback() {
+    if (!this._ready) {
+      // Boot lief noch nicht oder ist fehlgeschlagen — neuer Versuch,
+      // sobald hass schon da ist (sonst stößt set hass den Boot an).
+      if (this._hass && !this._booting) this._boot();
+      return;
+    }
+    if (!this._map) {
+      this._rebuildMap();
+    } else {
+      setTimeout(() => {
+        try { this._map?.invalidateSize({ animate: false, pan: false }); } catch (_) {}
+      }, 50);
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
+    this._routeSeq += 1; // laufende plan_route-Antwort verwerfen
+    this._poiSeq += 1;   // laufende get_pois-Antwort verwerfen
+    // Leaflet-Map sauber abbauen (Listener/Memory-Leak bei Lovelace-
+    // Edit-Zyklen) — Muster wie _destroyMap() der Map-/3D-Card.
+    if (this._map) {
+      try { this._map.remove(); } catch (_) {}
+      this._map = null;
+      this._baseLayer = null;
+      this._routeGroup = null;
+      this._poiGroup = null;
+    }
+    if (this._rpResizeObserver) {
+      try { this._rpResizeObserver.disconnect(); } catch (_) {}
+      this._rpResizeObserver = null;
+    }
+  }
+
+  // Nach disconnect/reconnect (z. B. Lovelace-Editor): Map neu aufbauen,
+  // Wegpunkt-Marker wieder anhängen (Marker überleben map.remove() samt
+  // ihrer Listener) und bei ≥ 2 Punkten die Route neu berechnen — das
+  // deckt auch eine beim Disconnect verloren gegangene, noch ausstehende
+  // Neuberechnung ab. Stats/Höhenprofil bleiben stehen (DOM bleibt).
+  _rebuildMap() {
+    this._createMap();
+    if (!this._map) return;
+    for (const m of this._waypoints) {
+      try { m.addTo(this._map); } catch (_) {}
+    }
+    // Gecachte Route nur neu ZEICHNEN — kein erneuter BRouter-Request bei
+    // jedem View-Wechsel (Fair-Use gegenüber brouter.de). Neu gerechnet
+    // wird nur, wenn noch keine Route vorliegt (z. B. Recalc beim
+    // Disconnect verloren gegangen).
+    if (this._lastRouteCoords && this._lastRouteCoords.length >= 2) {
+      const Leaflet = window.L;
+      const latlngs = this._lastRouteCoords.map((c) => [c[1], c[0]]);
+      try {
+        this._routeGroup.clearLayers();
+        Leaflet.polyline(latlngs, {
+          color: "#0b84c7", weight: 5, opacity: 0.9, lineCap: "round",
+        }).addTo(this._routeGroup);
+        this._map.fitBounds(Leaflet.latLngBounds(latlngs), { padding: [40, 40], animate: false });
+      } catch (_) {}
+      // POI-Marker aus dem In-Memory-Cache neu zeichnen (kein Re-Query)
+      if (this._poiEnabled) this._loadAndRenderPois();
+    } else if (this._waypoints.length >= 2) {
+      this._fitPending = true;
+      this._scheduleRoute();
+    }
+  }
+
+  _applyTitle() {
+    const head = this.querySelector(".rp-head span");
+    if (head) head.textContent = this._config.title || this._t("rp_default_title");
+  }
+
+  _buildDOM() {
+    // parseInt: height kann aus YAML als String kommen — niemals
+    // un-koerziert in den <style>-Text interpolieren.
+    const h = parseInt(this._config.height, 10) || 480;
+    this.innerHTML = "";
+    const card = document.createElement("ha-card");
+    this.appendChild(card);
+    const style = document.createElement("style");
+    style.textContent = LEAFLET_INLINE_CSS + `
+      .rp-head {
+        display:flex; align-items:center; gap:8px; padding:12px 16px;
+        background:var(--primary-color,#03a9f4); color:#fff; font-size:16px; font-weight:500;
+      }
+      .rp-toolbar {
+        display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 12px;
+        background:var(--secondary-background-color,#f5f5f5);
+        border-bottom:1px solid var(--divider-color,#e0e0e0);
+      }
+      .rp-toolbar select {
+        padding:5px 8px; border:1px solid var(--divider-color,#ccc);
+        border-radius:6px; font-size:13px;
+        background:var(--card-background-color,#fff); color:var(--primary-text-color,#333);
+      }
+      .rp-toolbar button {
+        padding:6px 12px; flex-shrink:0;
+        background:var(--primary-color,#03a9f4); color:#fff;
+        border:none; border-radius:8px; cursor:pointer; font-size:13px;
+      }
+      .rp-toolbar button:disabled { opacity:.35; cursor:not-allowed; }
+      .rp-toolbar button.eb-active {
+        background:rgba(11,132,199,.95);
+        outline:2px solid rgba(255,255,255,.6);
+      }
+      .rp-toolbar button.eb-loading {
+        opacity:.6;
+        animation:rp-poi-pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes rp-poi-pulse {
+        0%,100% { opacity:.55; }
+        50%     { opacity:.95; }
+      }
+      .rp-lbl { font-size:12px; color:var(--secondary-text-color,#666); }
+      .rp-namerow input {
+        flex:1; min-width:120px; padding:5px 8px;
+        border:1px solid var(--divider-color,#ccc); border-radius:6px; font-size:13px;
+        background:var(--card-background-color,#fff); color:var(--primary-text-color,#333);
+      }
+      .rp-routes {
+        padding:4px 12px 8px; max-height:220px; overflow-y:auto;
+        background:var(--secondary-background-color,#f5f5f5);
+        border-bottom:1px solid var(--divider-color,#e0e0e0);
+      }
+      .rp-route-row {
+        display:flex; align-items:center; gap:8px; padding:6px 4px;
+        border-bottom:1px solid var(--divider-color,#e0e0e0);
+      }
+      .rp-route-row:last-child { border-bottom:none; }
+      .rp-route-info { flex:1; min-width:0; cursor:pointer; }
+      .rp-route-name {
+        font-size:13px; font-weight:500; color:var(--primary-text-color,#333);
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      }
+      .rp-route-meta { font-size:11px; color:var(--secondary-text-color,#757575); }
+      .rp-route-del {
+        padding:4px 9px; flex-shrink:0; cursor:pointer; font-size:12px;
+        background:none; border:1px solid var(--divider-color,#ccc);
+        border-radius:6px; color:var(--secondary-text-color,#666);
+      }
+      .rp-route-del.confirm { background:#c62828; border-color:#c62828; color:#fff; }
+      .rp-routes-empty { font-size:12px; color:var(--secondary-text-color,#757575); padding:6px 4px; }
+      .rp-hint {
+        padding:6px 12px; font-size:12px; color:var(--secondary-text-color,#666);
+        border-bottom:1px solid var(--divider-color,#e0e0e0);
+      }
+      .rp-map-wrap { position:relative; }
+      .rp-map { width:100% !important; height:${h}px !important; min-height:${h}px; z-index:0; position:relative; }
+      .rp-status {
+        position:absolute; left:50%; top:12px; transform:translateX(-50%); z-index:1100;
+        max-width:90%; padding:6px 12px; border-radius:8px; text-align:center;
+        background:rgba(33,33,33,.78); backdrop-filter:blur(4px); color:#fff;
+        font-size:13px; pointer-events:none;
+      }
+      .rp-status small { display:block; font-size:11px; opacity:.8; margin-top:2px; }
+      .rp-wp {
+        width:18px; height:18px; border-radius:50%; box-sizing:border-box;
+        border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4);
+      }
+      .eb-poi-marker {
+        background:rgba(255,255,255,.95);
+        border-radius:50%;
+        width:18px !important; height:18px !important;
+        display:flex; align-items:center; justify-content:center;
+        font-size:12px; line-height:1;
+        box-shadow:0 1px 3px rgba(0,0,0,.3);
+        cursor:pointer;
+      }
+      .eb-poi-marker.eb-poi-charging   { border:1.5px solid #2e7d32; }
+      .eb-poi-marker.eb-poi-bicycle    { border:1.5px solid #c62828; }
+      .eb-poi-marker.eb-poi-water      { border:1.5px solid #1565c0; }
+      .eb-poi-marker.eb-poi-toilet     { border:1.5px solid #6a1b9a; }
+      .eb-poi-marker.eb-poi-food       { border:1.5px solid #e65100; }
+      .eb-poi-marker.eb-poi-cafe       { border:1.5px solid #5d4037; }
+      .eb-poi-marker.eb-poi-biergarten { border:1.5px solid #f9a825; }
+      .eb-poi-popup { font-family:inherit; max-width:240px; font-size:13px; }
+      .eb-poi-popup .eb-poi-title { font-weight:600; margin-bottom:4px; }
+      .eb-poi-popup .eb-poi-cat { font-size:11px; color:#666; margin-bottom:6px; }
+      .eb-poi-popup .eb-poi-link {
+        display:inline-block; padding:3px 8px;
+        background:#0b84c7; color:#fff; border-radius:6px;
+        text-decoration:none; font-size:11px; font-weight:500;
+      }
+      .rp-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:4px; padding:10px 16px 4px; }
+      .rp-stat { text-align:center; }
+      .rp-val { font-size:18px; font-weight:700; color:var(--primary-text-color,#212121); }
+      .rp-stat .rp-lbl { font-size:11px; color:var(--secondary-text-color,#757575); }
+      .rp-batt { padding:4px 16px 8px; }
+      .rp-batt-line { font-size:14px; color:var(--primary-text-color,#333); margin-bottom:4px; }
+      .rp-note { font-size:11px; color:var(--secondary-text-color,#757575); line-height:1.35; }
+      .rp-elev { padding:0 16px 12px; }
+      .rp-elev svg { width:100%; height:80px; display:block; }
+      .rp-elev-range { font-size:11px; color:var(--secondary-text-color,#777); margin-top:2px; }
+    `;
+    card.appendChild(style);
+
+    const t = (k, ...a) => ebT(this._hass, k, ...a);
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <div class="rp-head">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="white" d="M6.5,8.11C5.61,8.11 4.89,7.39 4.89,6.5A1.61,1.61 0 0,1 6.5,4.89C7.39,4.89 8.11,5.61 8.11,6.5A1.61,1.61 0 0,1 6.5,8.11M6.5,2C4,2 2,4 2,6.5C2,9.87 6.5,14.86 6.5,14.86C6.5,14.86 11,9.87 11,6.5C11,4 9,2 6.5,2M17.5,8.11A1.61,1.61 0 0,1 15.89,6.5C15.89,5.61 16.61,4.89 17.5,4.89C18.39,4.89 19.11,5.61 19.11,6.5A1.61,1.61 0 0,1 17.5,8.11M17.5,2C15,2 13,4 13,6.5C13,9.87 17.5,14.86 17.5,14.86C17.5,14.86 22,9.87 22,6.5C22,4 20,2 17.5,2M17.5,16C16.23,16 15.1,16.8 14.68,18H9.32C8.77,16.44 7.05,15.62 5.5,16.17C3.93,16.72 3.11,18.44 3.66,20C4.22,21.56 5.93,22.38 7.5,21.83C8.35,21.53 9,20.85 9.32,20H14.68C15.23,21.56 16.95,22.38 18.5,21.83C20.07,21.28 20.89,19.56 20.34,18C19.92,16.8 18.78,16 17.5,16M17.5,20.5A1.5,1.5 0 0,1 16,19A1.5,1.5 0 0,1 17.5,17.5A1.5,1.5 0 0,1 19,19A1.5,1.5 0 0,1 17.5,20.5Z"/></svg>
+        <span>${t("rp_default_title")}</span>
+      </div>
+      <div class="rp-toolbar">
+        <span class="rp-lbl">${t("rp_profile_label")}</span>
+        <select id="rp-profile">
+          <option value="trekking" selected>${t("rp_profile_trekking")}</option>
+          <option value="fastbike">${t("rp_profile_fastbike")}</option>
+          <option value="mtb">${t("rp_profile_mtb")}</option>
+          <option value="shortest">${t("rp_profile_shortest")}</option>
+        </select>
+        <button id="rp-reset" type="button">${t("rp_reset")}</button>
+        <button id="rp-gpx" type="button" disabled>${t("rp_export_gpx")}</button>
+        <button id="rp-poi" type="button" class="${this._poiEnabled ? "eb-active" : ""}" title="${t("rp_poi_btn")}" aria-label="${t("rp_poi_btn")}">📍</button>
+        <button id="rp-save" type="button" disabled title="${t("rp_save_btn")}" aria-label="${t("rp_save_btn")}">💾</button>
+        <button id="rp-routes" type="button" title="${t("rp_routes_btn")}" aria-label="${t("rp_routes_btn")}">📁</button>
+      </div>
+      <div class="rp-toolbar rp-namerow" id="rp-name-row" style="display:none;">
+        <input type="text" id="rp-name-in" maxlength="60" placeholder="${t("rp_name_placeholder")}">
+        <button id="rp-name-ok" type="button">OK</button>
+        <button id="rp-name-cancel" type="button">${t("rp_save_cancel")}</button>
+      </div>
+      <div id="rp-routes-panel" class="rp-routes" style="display:none;"></div>
+      <div class="rp-hint" id="rp-hint">${t("rp_hint_click")}</div>
+      <div class="rp-map-wrap">
+        <div id="rp-map" class="rp-map"></div>
+        <div class="rp-status" id="rp-status" style="display:none;">
+          <span id="rp-status-main"></span><small id="rp-status-sub" style="display:none;"></small>
+        </div>
+      </div>
+      <div class="rp-stats" id="rp-stats" style="display:none;">
+        <div class="rp-stat"><div class="rp-val" id="rp-dist">–</div><div class="rp-lbl">${t("rp_stat_distance")}</div></div>
+        <div class="rp-stat"><div class="rp-val" id="rp-asc">–</div><div class="rp-lbl">${t("rp_stat_ascent")}</div></div>
+        <div class="rp-stat"><div class="rp-val" id="rp-desc">–</div><div class="rp-lbl">${t("rp_stat_descent")}</div></div>
+        <div class="rp-stat"><div class="rp-val" id="rp-time">–</div><div class="rp-lbl">${t("rp_stat_time")}</div></div>
+        <div class="rp-stat" id="rp-stat-energy" style="display:none;"><div class="rp-val" id="rp-energy">–</div><div class="rp-lbl">${t("rp_stat_energy")}</div></div>
+      </div>
+      <div class="rp-batt" id="rp-batt" style="display:none;">
+        <div class="rp-batt-line" id="rp-batt-line" style="display:none;"></div>
+        <div class="rp-note" id="rp-note-est"></div>
+        <div class="rp-note" id="rp-note-hilly" style="display:none;"></div>
+      </div>
+      <div class="rp-elev" id="rp-elev" style="display:none;">
+        <svg id="rp-elev-svg" viewBox="0 0 600 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="rp-elev-range" id="rp-elev-range"></div>
+      </div>
+    `;
+    while (wrap.firstChild) card.appendChild(wrap.firstChild);
+
+    this.querySelector("#rp-profile").addEventListener("change", (e) => {
+      const v = e.target.value;
+      this._profile = RP_PROFILES.includes(v) ? v : "trekking";
+      this._scheduleRoute();
+    });
+    this.querySelector("#rp-reset").addEventListener("click", () => this._reset());
+    this.querySelector("#rp-gpx").addEventListener("click", () => this._exportGpx());
+    this.querySelector("#rp-poi").addEventListener("click", () => this._togglePoi());
+    this.querySelector("#rp-save").addEventListener("click", () => this._toggleSaveRow());
+    this.querySelector("#rp-routes").addEventListener("click", () => this._toggleRoutesPanel());
+    this.querySelector("#rp-name-ok").addEventListener("click", () => this._saveRoute());
+    this.querySelector("#rp-name-cancel").addEventListener("click", () => this._toggleSaveRow(false));
+    this.querySelector("#rp-name-in").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this._saveRoute();
+      } else if (e.key === "Escape") {
+        this._toggleSaveRow(false);
+      }
+    });
+  }
+
+  _createMap() {
+    const Leaflet = window.L;
+    const mapEl = this.querySelector("#rp-map");
+    if (!Leaflet || !mapEl) {
+      this._setStatus(this._t("err_leaflet_load"), "");
+      return;
+    }
+    const cfg = this._hass && this._hass.config;
+    const lat = Number(cfg && cfg.latitude);
+    const lon = Number(cfg && cfg.longitude);
+    this._map = Leaflet.map(mapEl, {
+      zoomControl: true,
+      attributionControl: false,
+      preferCanvas: true,
+    }).setView([Number.isFinite(lat) ? lat : 48.7, Number.isFinite(lon) ? lon : 12.4], 13);
+    const def = MAP_STYLES.osm;
+    this._baseLayer = Leaflet.tileLayer(def.url, def.options).addTo(this._map);
+    this._routeGroup = Leaflet.layerGroup().addTo(this._map);
+    this._poiGroup = Leaflet.layerGroup().addTo(this._map);
+    this._map.on("click", (e) => this._onMapClick(e));
+
+    // Leaflet friert die beim Erstellen gemessene Container-Größe ein.
+    // Wird die Karte initialisiert, bevor das HA-Layout fertig ist
+    // (Panel-Ansicht, Masonry, langsame Browser), rendern Kacheln nur in
+    // einer Teilfläche. Gegenmittel wie bei der Heatmap-Card:
+    // (a) ResizeObserver fängt jede spätere Größenänderung ab,
+    // (b) eine kurze invalidateSize-Staffel deckt das Einschwingen
+    //     direkt nach dem Erstellen ab.
+    if (!this._rpResizeObserver && typeof ResizeObserver !== "undefined") {
+      this._rpResizeObserver = new ResizeObserver(() => {
+        try { this._map?.invalidateSize({ animate: false, pan: false }); } catch (_) {}
+      });
+      this._rpResizeObserver.observe(mapEl);
+    }
+    const settle = () => {
+      try { this._map?.invalidateSize({ animate: false, pan: false }); } catch (_) {}
+    };
+    requestAnimationFrame(() => requestAnimationFrame(settle));
+    setTimeout(settle, 150);
+    setTimeout(settle, 400);
+    setTimeout(settle, 700);
+  }
+
+  // -------------------------------------------------------------------------
+  // Wegpunkte
+  // -------------------------------------------------------------------------
+
+  _wpIcon(color) {
+    return window.L.divIcon({
+      className: "",
+      html: `<div class="rp-wp" style="background:${color}"></div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9],
+    });
+  }
+
+  // Gemeinsamer Marker-Bau für Karten-Klick UND das Laden gespeicherter
+  // Routen — Farben, Drag- und Klick-Handler bleiben so garantiert identisch.
+  _addWaypoint(latlng) {
+    const Leaflet = window.L;
+    if (!Leaflet || !this._map || this._waypoints.length >= RP_MAX_WAYPOINTS) return null;
+    const marker = Leaflet.marker(latlng, {
+      draggable: true,
+      icon: this._wpIcon("#2196F3"),
+    });
+    marker.on("click", () => this._removeWaypoint(marker));
+    marker.on("dragend", () => {
+      this._fitPending = true;
+      this._scheduleRoute();
+    });
+    marker.addTo(this._map);
+    this._waypoints.push(marker);
+    return marker;
+  }
+
+  _onMapClick(e) {
+    if (!this._addWaypoint(e.latlng)) return;
+    this._refreshWaypointStyles();
+    this._fitPending = true;
+    this._scheduleRoute();
+  }
+
+  _removeWaypoint(marker) {
+    const idx = this._waypoints.indexOf(marker);
+    if (idx === -1) return;
+    this._waypoints.splice(idx, 1);
+    try { this._map.removeLayer(marker); } catch (_) {}
+    this._refreshWaypointStyles();
+    this._fitPending = true;
+    this._scheduleRoute();
+  }
+
+  // Start grün, Ziel rot, Zwischenpunkte blau (Farben wie Start/Ziel der Map-Card).
+  _refreshWaypointStyles() {
+    const n = this._waypoints.length;
+    this._waypoints.forEach((m, i) => {
+      const color = i === 0 ? "#4CAF50" : i === n - 1 ? "#f44336" : "#2196F3";
+      m.setIcon(this._wpIcon(color));
+    });
+  }
+
+  // Wegpunkte + Route entfernen — gemeinsamer Kern von _reset (Toolbar-
+  // Button) und _loadSavedRoute (Karte leeren, bevor die geladene Route
+  // ihre eigenen Marker setzt).
+  _clearWaypoints() {
+    this._routeSeq += 1; // laufende Anfrage verwerfen
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
+    for (const m of this._waypoints) {
+      try { this._map.removeLayer(m); } catch (_) {}
+    }
+    this._waypoints = [];
+    this._clearRoute();
+    this._setStatus(null);
+  }
+
+  _reset() {
+    this._clearWaypoints();
+    this._loadedRouteId = null;
+    this._loadedRouteName = null;
+    this._toggleSaveRow(false);
+    const hint = this.querySelector("#rp-hint");
+    if (hint) hint.style.display = "";
+  }
+
+  // -------------------------------------------------------------------------
+  // Routing
+  // -------------------------------------------------------------------------
+
+  _scheduleRoute() {
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+    this._debounceTimer = setTimeout(() => {
+      this._debounceTimer = null;
+      this._calcRoute();
+    }, 600);
+  }
+
+  async _calcRoute() {
+    if (this._waypoints.length < 2) {
+      this._routeSeq += 1;
+      this._clearRoute();
+      this._setStatus(null);
+      return;
+    }
+    const seq = ++this._routeSeq;
+    this._setStatus(this._t("rp_routing"));
+    let res;
+    try {
+      res = await this._hass.callWS({
+        type: "bosch_ebike/plan_route",
+        lonlats: this._waypoints.map((m) => { const ll = m.getLatLng(); return [ll.lng, ll.lat]; }),
+        profile: this._profile,
+        brouter_url: this._config.brouter_url || null,
+      });
+    } catch (err) {
+      if (seq !== this._routeSeq) return;
+      const main = err && err.code === "server_unreachable"
+        ? this._t("rp_err_server")
+        : this._t("rp_err_no_route");
+      this._setStatus(main, (err && err.message) || "");
+      return;
+    }
+    if (seq !== this._routeSeq) return;
+    this._setStatus(null);
+    this._renderRoute(res && res.geojson);
+  }
+
+  _clearRoute() {
+    if (this._routeGroup) this._routeGroup.clearLayers();
+    this._poiSeq += 1; // laufende get_pois-Antwort verwerfen
+    if (this._poiGroup) {
+      try { this._poiGroup.clearLayers(); } catch (_) {}
+    }
+    this._lastRouteCoords = null;
+    this._lastRouteProps = null;
+    const gpxBtn = this.querySelector("#rp-gpx");
+    if (gpxBtn) gpxBtn.disabled = true;
+    const saveBtn = this.querySelector("#rp-save");
+    if (saveBtn) saveBtn.disabled = true;
+    for (const id of ["rp-stats", "rp-batt", "rp-elev"]) {
+      const el = this.querySelector(`#${id}`);
+      if (el) el.style.display = "none";
+    }
+  }
+
+  _renderRoute(geojson) {
+    const Leaflet = window.L;
+    const feat = geojson && Array.isArray(geojson.features) ? geojson.features[0] : null;
+    const coords = feat && feat.geometry && Array.isArray(feat.geometry.coordinates)
+      ? feat.geometry.coordinates : null;
+    if (!Leaflet || !this._map || !coords || coords.length < 2) {
+      this._clearRoute();
+      this._setStatus(this._t("rp_err_no_route"), "");
+      return;
+    }
+
+    this._lastRouteCoords = coords;
+    this._lastRouteProps = feat.properties || {};
+    this._routeGroup.clearLayers();
+    const latlngs = coords.map((c) => [c[1], c[0]]);
+    Leaflet.polyline(latlngs, {
+      color: "#0b84c7", weight: 5, opacity: 0.9, lineCap: "round",
+    }).addTo(this._routeGroup);
+
+    if (this._fitPending) {
+      this._fitPending = false;
+      try {
+        this._map.fitBounds(Leaflet.latLngBounds(latlngs), { padding: [40, 40], animate: false });
+      } catch (_) {}
+    }
+
+    const hint = this.querySelector("#rp-hint");
+    if (hint) hint.style.display = "none";
+    const gpxBtn = this.querySelector("#rp-gpx");
+    if (gpxBtn) gpxBtn.disabled = false;
+    const saveBtn = this.querySelector("#rp-save");
+    if (saveBtn) saveBtn.disabled = false;
+
+    this._renderStats(this._lastRouteProps);
+    this._renderElevation(coords);
+    if (this._poiEnabled) this._loadAndRenderPois();
+  }
+
+  // -------------------------------------------------------------------------
+  // Stats, Verbrauch + Akku-Check
+  // -------------------------------------------------------------------------
+
+  _renderStats(props) {
+    const km = (parseFloat(props["track-length"]) || 0) / 1000;
+    const ascent = Math.max(0, Math.round(parseFloat(props["filtered ascend"]) || 0));
+    const plain = parseFloat(props["plain-ascend"]) || 0;
+    const descent = Math.max(0, Math.round((parseFloat(props["filtered ascend"]) || 0) - plain));
+    const totalS = parseFloat(props["total-time"]) || 0;
+    let hh = Math.floor(totalS / 3600);
+    let mm = Math.round((totalS % 3600) / 60);
+    if (mm === 60) { hh += 1; mm = 0; }
+
+    this.querySelector("#rp-dist").textContent = `${km.toFixed(1)} km`;
+    this.querySelector("#rp-asc").textContent = `${ascent} m`;
+    this.querySelector("#rp-desc").textContent = `${descent} m`;
+    this.querySelector("#rp-time").textContent = `${hh}:${String(mm).padStart(2, "0")} h`;
+    this.querySelector("#rp-stats").style.display = "";
+
+    const energyStat = this.querySelector("#rp-stat-energy");
+    const battBox = this.querySelector("#rp-batt");
+    const range = this._rangeData();
+    // Signatur merken, damit set hass nur bei tatsächlich geänderten
+    // Verbrauchs-/SoC-Werten neu rendert (Live-SoC-Refresh).
+    this._lastRangeSig = range ? `${range.whPerKm}|${range.capacityWh}|${range.soc}` : "";
+    if (!range || !range.whPerKm) {
+      // Ohne Ø-Verbrauch keine Verbrauchs-/Akku-Zeilen — die Basis-Stats bleiben.
+      energyStat.style.display = "none";
+      battBox.style.display = "none";
+      return;
+    }
+
+    const wh = Math.round(range.whPerKm * km);
+    this.querySelector("#rp-energy").textContent = `${wh} Wh`;
+    energyStat.style.display = "";
+
+    const battLine = this.querySelector("#rp-batt-line");
+    if (range.capacityWh && range.soc != null) {
+      const needPct = (wh / range.capacityWh) * 100;
+      const soc = range.soc;
+      const icon = needPct <= soc * 0.7 ? "✅" : needPct <= soc ? "⚠️" : "⛔";
+      battLine.textContent = `${icon} ${this._t("rp_batt_line", wh, Math.round(needPct), Math.round(soc))}`;
+      battLine.style.display = "";
+    } else {
+      battLine.style.display = "none";
+    }
+    this.querySelector("#rp-note-est").textContent = this._t("rp_estimate_note");
+    const hilly = this.querySelector("#rp-note-hilly");
+    hilly.textContent = this._t("rp_hilly_note");
+    hilly.style.display = ascent > 800 ? "" : "none";
+    battBox.style.display = "";
+  }
+
+  // Reichweiten-Datenquelle: config.entity oder sprachunabhängige
+  // Auto-Erkennung (Registry). SoC aus config.soc_entity oder dem
+  // Schwester-Sensor "estimated_range_current" (Attribut current_soc).
+  _rangeData() {
+    const states = this._hass && this._hass.states;
+    if (!states) return null;
+    let entId = this._config.entity;
+    if (!entId || !states[entId]) {
+      entId = boschRangeEntityIds(this._hass, "estimated_range_full")[0] || null;
+    }
+    const st = entId ? states[entId] : null;
+    if (!st) return null;
+    const attrs = st.attributes || {};
+    const whPerKm = Number(attrs.wh_per_km);
+    const capacityWh = Number(attrs.battery_capacity_wh);
+    let soc = NaN;
+    if (this._config.soc_entity && states[this._config.soc_entity]) {
+      soc = Number(states[this._config.soc_entity].state);
+    } else {
+      // Schwester-Sensor bevorzugt vom selben Gerät (Registry); Fallback:
+      // englisches ID-Suffix bzw. erster Treffer.
+      const reg = (this._hass && this._hass.entities) || {};
+      const dev = reg[entId] && reg[entId].device_id;
+      const candidates = boschRangeEntityIds(this._hass, "estimated_range_current");
+      let sibId = dev
+        ? candidates.find((id) => reg[id] && reg[id].device_id === dev)
+        : null;
+      if (!sibId) {
+        const guess = entId.replace(/_estimated_range_full$/, "_estimated_range_current");
+        sibId = (guess !== entId && states[guess]) ? guess : candidates[0];
+      }
+      const sibling = sibId ? states[sibId] : null;
+      if (sibling && sibling.attributes) soc = Number(sibling.attributes.current_soc);
+    }
+    return {
+      whPerKm: Number.isFinite(whPerKm) && whPerKm > 0 ? whPerKm : null,
+      capacityWh: Number.isFinite(capacityWh) && capacityWh > 0 ? capacityWh : null,
+      soc: Number.isFinite(soc) ? soc : null,
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // Höhenprofil
+  // -------------------------------------------------------------------------
+
+  _haversineMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toRad = (d) => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2
+      + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+
+  _renderElevation(coords) {
+    const box = this.querySelector("#rp-elev");
+    const svg = this.querySelector("#rp-elev-svg");
+    if (!box || !svg) return;
+
+    const pts = []; // [kumulierte Distanz m, Höhe m]
+    let dist = 0;
+    let prev = null;
+    for (const c of coords) {
+      if (prev) dist += this._haversineMeters(prev[1], prev[0], c[1], c[0]);
+      prev = c;
+      if (c.length > 2 && Number.isFinite(c[2])) pts.push([dist, c[2]]);
+    }
+    if (pts.length < 2) {
+      box.style.display = "none";
+      return;
+    }
+
+    const W = 600, H = 80, PAD = 4;
+    const maxD = pts[pts.length - 1][0] || 1;
+    let minE = Infinity, maxE = -Infinity;
+    for (const p of pts) {
+      if (p[1] < minE) minE = p[1];
+      if (p[1] > maxE) maxE = p[1];
+    }
+    const span = Math.max(maxE - minE, 10);
+    const x = (d) => PAD + (d / maxD) * (W - 2 * PAD);
+    const y = (e) => H - PAD - ((e - minE) / span) * (H - 2 * PAD);
+    const line = pts.map((p) => `${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join(" ");
+    svg.innerHTML =
+      `<polygon points="${PAD},${H - PAD} ${line} ${W - PAD},${H - PAD}" fill="var(--primary-color,#03a9f4)" fill-opacity="0.15"></polygon>` +
+      `<polyline points="${line}" fill="none" stroke="var(--primary-color,#03a9f4)" stroke-width="2"></polyline>`;
+    const range = this.querySelector("#rp-elev-range");
+    if (range) range.textContent = this._t("profile_min_max", Math.round(minE), Math.round(maxE));
+    box.style.display = "";
+  }
+
+  // -------------------------------------------------------------------------
+  // GPX-Export
+  // -------------------------------------------------------------------------
+
+  _exportGpx() {
+    const coords = this._lastRouteCoords; if (!coords || coords.length < 2) return;
+    const esc = (s) => String(s).replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+    const name = esc(`Bosch eBike Route ${new Date().toISOString().slice(0, 10)}`);
+    const pts = coords.map((c) => {
+      const lon = Number(c[0]);
+      const lat = Number(c[1]);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+      const ele = c.length > 2 && Number.isFinite(c[2]) ? `<ele>${Math.round(c[2])}</ele>` : "";
+      return `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}">${ele}</trkpt>`;
+    }).filter(Boolean).join("\n");
+    if (!pts) return;
+    const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<gpx version="1.1" creator="ha-bosch-ebike" xmlns="http://www.topografix.com/GPX/1/1">\n` +
+      `  <trk>\n    <name>${name}</name>\n    <trkseg>\n${pts}\n    </trkseg>\n  </trk>\n</gpx>\n`;
+    const blob = new Blob([gpx], { type: "application/gpx+xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `bosch-ebike-route-${new Date().toISOString().slice(0, 10)}.gpx`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  // -------------------------------------------------------------------------
+  // Gespeicherte Routen (HA-Storage via list_routes/save_route/delete_route)
+  // -------------------------------------------------------------------------
+
+  _toggleSaveRow(show) {
+    const row = this.querySelector("#rp-name-row");
+    if (!row) return;
+    const visible = row.style.display !== "none";
+    const next = show != null ? !!show : !visible;
+    row.style.display = next ? "" : "none";
+    if (next) {
+      const input = this.querySelector("#rp-name-in");
+      if (input) {
+        // Vorbelegung: Name der aktuell geladenen Route (Re-Save), sonst leer.
+        input.value = this._loadedRouteName || "";
+        input.focus();
+        input.select();
+      }
+    }
+  }
+
+  async _saveRoute() {
+    const input = this.querySelector("#rp-name-in");
+    const name = ((input && input.value) || "").trim();
+    if (!name || this._waypoints.length < 2) return;
+    const lonlats = this._waypoints.map((m) => {
+      const ll = m.getLatLng();
+      return [ll.lng, ll.lat];
+    });
+    const meters = parseFloat(this._lastRouteProps && this._lastRouteProps["track-length"]);
+    const msg = {
+      type: "bosch_ebike/save_route",
+      name,
+      profile: this._profile,
+      lonlats,
+      distance_km: Number.isFinite(meters) ? Math.round(meters / 100) / 10 : null,
+    };
+    // Unveränderter Name der geladenen Route → Update per id. Ein NEUER
+    // Name lässt die id bewusst weg: das Backend überschreibt dann einen
+    // namensgleichen Eintrag oder legt neu an ("Speichern unter").
+    if (
+      this._loadedRouteId
+      && this._loadedRouteName
+      && name.toLowerCase() === this._loadedRouteName.trim().toLowerCase()
+    ) {
+      msg.route_id = this._loadedRouteId;
+    }
+    let res;
+    try {
+      res = await this._hass.callWS(msg);
+    } catch (err) {
+      // Servermeldung (Limit erreicht, ungültiger Name, …) klein dazu.
+      this._setStatus(this._t("msg_error_prefix") + (err && err.message || err), "");
+      return;
+    }
+    this._loadedRouteId = (res && res.saved_id) || null;
+    this._loadedRouteName = name;
+    this._toggleSaveRow(false);
+    // Kurz-Bestätigung, blendet sich selbst aus (Muster wie rp_poi_error).
+    const okMsg = this._t("rp_save_ok");
+    this._setStatus(okMsg, "");
+    setTimeout(() => {
+      const mainEl = this.querySelector("#rp-status-main");
+      if (mainEl && mainEl.textContent === okMsg) this._setStatus(null);
+    }, 3000);
+    // Offenes Listen-Panel direkt mit der Antwort auffrischen (kein Re-Fetch).
+    this._refreshRoutesPanel(res && Array.isArray(res.routes) ? res.routes : null);
+  }
+
+  async _toggleRoutesPanel() {
+    const panel = this.querySelector("#rp-routes-panel");
+    if (!panel) return;
+    const open = panel.style.display === "none";
+    panel.style.display = open ? "" : "none";
+    const btn = this.querySelector("#rp-routes");
+    if (btn) btn.classList.toggle("eb-active", open);
+    if (open) await this._refreshRoutesPanel();
+  }
+
+  // Listen-Panel neu rendern; ohne übergebene Liste wird sie frisch vom
+  // Backend geholt. Tut nichts, solange das Panel geschlossen ist.
+  async _refreshRoutesPanel(routes = null) {
+    const panel = this.querySelector("#rp-routes-panel");
+    if (!panel || panel.style.display === "none") return;
+    if (!routes) {
+      try {
+        const res = await this._hass.callWS({ type: "bosch_ebike/list_routes" });
+        routes = res && Array.isArray(res.routes) ? res.routes : [];
+      } catch (err) {
+        console.warn("[Bosch eBike Routeplanner] list_routes failed", err);
+        panel.innerHTML = "";
+        const fail = document.createElement("div");
+        fail.className = "rp-routes-empty";
+        fail.textContent = this._t("rp_load_failed");
+        panel.appendChild(fail);
+        return;
+      }
+    }
+    this._renderRoutesList(routes);
+  }
+
+  // Routennamen sind Nutzereingaben → konsequent über textContent setzen
+  // (kein innerHTML), damit kein HTML aus dem Namen gerendert wird.
+  _renderRoutesList(routes) {
+    const panel = this.querySelector("#rp-routes-panel");
+    if (!panel) return;
+    panel.innerHTML = "";
+    if (!routes.length) {
+      const empty = document.createElement("div");
+      empty.className = "rp-routes-empty";
+      empty.textContent = this._t("rp_no_saved");
+      panel.appendChild(empty);
+      return;
+    }
+    for (const route of routes) {
+      const row = document.createElement("div");
+      row.className = "rp-route-row";
+
+      const info = document.createElement("div");
+      info.className = "rp-route-info";
+      const nameEl = document.createElement("div");
+      nameEl.className = "rp-route-name";
+      nameEl.textContent = route.name || "";
+      const meta = document.createElement("div");
+      meta.className = "rp-route-meta";
+      const parts = [];
+      if (RP_PROFILES.includes(route.profile)) {
+        parts.push(this._t("rp_profile_" + route.profile));
+      }
+      const km = Number(route.distance_km);
+      if (Number.isFinite(km)) {
+        parts.push(`${km.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`);
+      }
+      if (route.updated) {
+        const d = new Date(route.updated);
+        if (!Number.isNaN(d.getTime())) parts.push(d.toLocaleDateString());
+      }
+      meta.textContent = parts.join(" · ");
+      info.appendChild(nameEl);
+      info.appendChild(meta);
+      info.addEventListener("click", () => this._loadSavedRoute(route));
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "rp-route-del";
+      del.textContent = "✕";
+      del.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        this._deleteSavedRoute(route, del);
+      });
+
+      row.appendChild(info);
+      row.appendChild(del);
+      panel.appendChild(row);
+    }
+  }
+
+  _loadSavedRoute(route) {
+    const Leaflet = window.L;
+    if (!Leaflet || !this._map) return;
+    // Karte leeren wie _reset, aber Panel + Hinweiszeile unangetastet lassen.
+    this._clearWaypoints();
+    for (const pair of (Array.isArray(route.lonlats) ? route.lonlats : [])) {
+      const lon = Number(pair && pair[0]);
+      const lat = Number(pair && pair[1]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      this._addWaypoint(Leaflet.latLng(lat, lon));
+    }
+    this._refreshWaypointStyles();
+    if (RP_PROFILES.includes(route.profile)) {
+      this._profile = route.profile;
+      const sel = this.querySelector("#rp-profile");
+      if (sel) sel.value = route.profile;
+    }
+    this._loadedRouteId = route.id || null;
+    this._loadedRouteName = route.name || null;
+    this._fitPending = true;
+    this._scheduleRoute();
+  }
+
+  async _deleteSavedRoute(route, btn) {
+    // Zwei-Klick-Bestätigung wie der Stop-Button der Dashboard-Card:
+    // erster Klick schaltet 3 s lang in den "Sicher?"-Zustand.
+    if (btn.dataset.confirm !== "1") {
+      btn.dataset.confirm = "1";
+      btn.classList.add("confirm");
+      btn.textContent = this._t("dash_btn_confirm");
+      setTimeout(() => {
+        if (btn.dataset.confirm === "1") {
+          btn.dataset.confirm = "";
+          btn.classList.remove("confirm");
+          btn.textContent = "✕";
+        }
+      }, 3000);
+      return;
+    }
+    let res;
+    try {
+      res = await this._hass.callWS({
+        type: "bosch_ebike/delete_route",
+        route_id: route.id,
+      });
+    } catch (err) {
+      this._setStatus(this._t("msg_error_prefix") + (err && err.message || err), "");
+      return;
+    }
+    // Geladene Route gelöscht? Verknüpfung lösen — die Marker bleiben,
+    // ein erneutes 💾 legt die Route bei Bedarf wieder neu an.
+    if (this._loadedRouteId && this._loadedRouteId === route.id) {
+      this._loadedRouteId = null;
+      this._loadedRouteName = null;
+    }
+    this._renderRoutesList(res && Array.isArray(res.routes) ? res.routes : []);
+  }
+
+  // -------------------------------------------------------------------------
+  // POI-Overlay entlang der Route (Overpass via Backend-Proxy) — Mechanik wie
+  // in der Map-Card, zusätzlich mit Gastronomie-Kategorien
+  // -------------------------------------------------------------------------
+
+  _togglePoi() {
+    this._poiEnabled = !this._poiEnabled;
+    try { localStorage.setItem("eb-rp-poi-enabled", this._poiEnabled ? "1" : "0"); } catch (_) {}
+    const btn = this.querySelector("#rp-poi");
+    if (btn) btn.classList.toggle("eb-active", this._poiEnabled);
+    if (this._poiEnabled) {
+      // Ohne Route passiert nichts — POIs kommen, sobald eine Route da ist.
+      this._loadAndRenderPois();
+    } else {
+      this._poiSeq += 1; // laufende Antwort verwerfen
+      if (this._poiGroup) {
+        try { this._poiGroup.clearLayers(); } catch (_) {}
+      }
+    }
+  }
+
+  _setPoiLoadingUI(loading) {
+    const btn = this.querySelector("#rp-poi");
+    if (btn) {
+      btn.classList.toggle("eb-loading", !!loading);
+      btn.disabled = !!loading;
+    }
+  }
+
+  async _loadAndRenderPois() {
+    if (!this._poiEnabled || !this._map) return;
+    const coords = this._lastRouteCoords;
+    if (!coords || coords.length < 2) return;
+    const track = coords
+      .map((c) => ({ lat: Number(c[1]), lon: Number(c[0]) }))
+      .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+    if (track.length < 2) return;
+
+    // Bbox der Route + Puffer (wie _fetchPois der Map-Card, Radius 500 m)
+    let minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+    for (const p of track) {
+      if (p.lat < minLat) minLat = p.lat;
+      if (p.lat > maxLat) maxLat = p.lat;
+      if (p.lon < minLon) minLon = p.lon;
+      if (p.lon > maxLon) maxLon = p.lon;
+    }
+    const pad = RP_POI_RADIUS_M / 111000 + 0.001;
+    const south = minLat - pad;
+    const north = maxLat + pad;
+    const west = minLon - pad;
+    const east = maxLon + pad;
+
+    // In-Memory-Cache: gerundete Bbox + Kategorien — Toggle/Rebuild auf
+    // derselben Route fragt Overpass nicht erneut ab.
+    const cacheKey = [south, west, north, east].map((v) => v.toFixed(4)).join(",")
+      + "|" + RP_POI_CATEGORIES.join(",");
+    const seq = ++this._poiSeq;
+    let elements = this._poiCache.get(cacheKey);
+
+    if (!elements) {
+      this._setPoiLoadingUI(true);
+      try {
+        const res = await this._hass.callWS({
+          type: "bosch_ebike/get_pois",
+          south, west, north, east,
+          categories: RP_POI_CATEGORIES,
+        });
+        elements = (res && Array.isArray(res.elements)) ? res.elements : [];
+        if (this._poiCache.size > 20) this._poiCache.clear();
+        this._poiCache.set(cacheKey, elements);
+      } catch (err) {
+        console.warn("[Bosch eBike Routeplanner] POI fetch failed", err);
+        if (seq === this._poiSeq) {
+          // Marker der VORHERIGEN Route nicht neben der neuen stehen lassen.
+          if (this._poiGroup) {
+            try { this._poiGroup.clearLayers(); } catch (_) {}
+          }
+          const msg = this._t("rp_poi_error");
+          this._setStatus(msg, "");
+          // Hinweis nach kurzer Zeit ausblenden — die Route bleibt nutzbar.
+          setTimeout(() => {
+            const mainEl = this.querySelector("#rp-status-main");
+            if (mainEl && mainEl.textContent === msg) this._setStatus(null);
+          }, 5000);
+        }
+        return;
+      } finally {
+        // Nur die eigene (aktuelle) Anfrage darf den Lade-Puls beenden —
+        // sonst stoppt eine überholte Antwort die Anzeige der laufenden.
+        if (seq === this._poiSeq) this._setPoiLoadingUI(false);
+      }
+    }
+
+    // Veraltet (neue Route/Toggle aus/Reset während des Fetches)? Verwerfen.
+    if (seq !== this._poiSeq || !this._poiEnabled || this._lastRouteCoords !== coords) return;
+    this._renderPoiMarkers(this._filterPois(elements, track));
+  }
+
+  // Elemente parsen, auf Routen-Nähe filtern und auf 100 Marker kappen
+  // (Spiegel von _fetchPois der Map-Card, fester Radius 500 m).
+  _filterPois(elements, track) {
+    const MAX_DIST_M = RP_POI_RADIUS_M;
+    const sampled = this._poiSamplePoints(track, MAX_DIST_M / 2);
+    const out = [];
+    for (const el of elements) {
+      if (typeof el.lat !== "number" || typeof el.lon !== "number") continue;
+      let near = false;
+      for (const sp of sampled) {
+        if (this._haversineMeters(el.lat, el.lon, sp.lat, sp.lon) <= MAX_DIST_M) {
+          near = true; break;
+        }
+      }
+      if (!near) continue;
+      const tags = el.tags || {};
+      const cat = this._poiCategory(tags);
+      if (!cat) continue;
+      out.push({
+        lat: el.lat,
+        lon: el.lon,
+        category: cat.key,
+        catLabel: cat.label,
+        catIcon: cat.icon,
+        name: tags.name || cat.label,
+        osmId: el.id,
+        tags,
+      });
+    }
+    // Maximal 100 Marker, sonst wird die Karte unübersichtlich
+    return out.slice(0, 100);
+  }
+
+  // Kategorien wie in der Map-Card, zusätzlich Gastronomie
+  _poiCategory(tags) {
+    if (tags.amenity === "charging_station") {
+      return { key: "charging", label: this._t("poi_charging"), icon: "🔌" };
+    }
+    if (tags.shop === "bicycle") {
+      return { key: "bicycle", label: this._t("poi_bicycle_shop"), icon: "🛠️" };
+    }
+    if (tags.amenity === "bicycle_repair_station") {
+      return { key: "bicycle", label: this._t("poi_repair"), icon: "🛠️" };
+    }
+    if (tags.amenity === "drinking_water") {
+      return { key: "water", label: this._t("poi_water"), icon: "💧" };
+    }
+    if (tags.amenity === "toilets") {
+      return { key: "toilet", label: this._t("poi_toilet"), icon: "🚻" };
+    }
+    if (tags.amenity === "restaurant" || tags.amenity === "fast_food") {
+      return { key: "food", label: this._t("poi_food"), icon: "🍽️" };
+    }
+    if (tags.amenity === "cafe") {
+      return { key: "cafe", label: this._t("poi_cafe"), icon: "☕" };
+    }
+    if (tags.amenity === "biergarten") {
+      return { key: "biergarten", label: this._t("poi_biergarten"), icon: "🍺" };
+    }
+    return null;
+  }
+
+  /// Punkte alle `intervalM` Meter entlang der Route (Dublette der Map-Card,
+  /// wie beim _haversineMeters-Präzedenzfall).
+  _poiSamplePoints(track, intervalM = 250) {
+    if (!Array.isArray(track) || track.length < 2) return [];
+    const intervalKm = Math.max(0.05, intervalM / 1000);
+    const pts = [];
+    pts.push({ lat: track[0].lat, lon: track[0].lon });
+    let cumKm = 0;
+    let lastSampled = 0;
+    for (let i = 1; i < track.length; i += 1) {
+      cumKm += this._haversineMeters(track[i - 1].lat, track[i - 1].lon, track[i].lat, track[i].lon) / 1000;
+      if (cumKm - lastSampled >= intervalKm) {
+        pts.push({ lat: track[i].lat, lon: track[i].lon });
+        lastSampled = cumKm;
+      }
+    }
+    const last = track[track.length - 1];
+    pts.push({ lat: last.lat, lon: last.lon });
+    return pts;
+  }
+
+  _renderPoiMarkers(pois) {
+    if (!this._poiEnabled) return;
+    const Leaflet = window.L;
+    if (!Leaflet || !this._map) return;
+    if (!this._poiGroup) this._poiGroup = Leaflet.layerGroup().addTo(this._map);
+    this._poiGroup.clearLayers();
+    const popupOpts = { maxWidth: 260, closeOnClick: false, autoClose: false };
+    for (const poi of pois) {
+      const icon = Leaflet.divIcon({
+        className: "",
+        html: `<div class="eb-poi-marker eb-poi-${poi.category}">${poi.catIcon}</div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      });
+      const marker = Leaflet.marker([poi.lat, poi.lon], { icon, title: `${poi.catIcon} ${poi.name}` });
+      marker.bindPopup(this._poiPopupHtml(poi), popupOpts);
+      marker.addTo(this._poiGroup);
+    }
+  }
+
+  // Dublette der Map-Card-Methode — OSM-Tag-Werte (Name, Öffnungszeiten,
+  // Adresse, Website) sind Fremddaten und werden durchgängig escaped.
+  _poiPopupHtml(poi) {
+    const safeName = this._escapeHtml(poi.name);
+    const osmUrl = `https://www.openstreetmap.org/node/${poi.osmId}`;
+    let extra = "";
+    if (poi.tags.opening_hours) {
+      extra += `<div>🕒 ${this._escapeHtml(poi.tags.opening_hours)}</div>`;
+    }
+    if (poi.tags["addr:street"]) {
+      const addr = [poi.tags["addr:street"], poi.tags["addr:housenumber"]].filter(Boolean).join(" ");
+      extra += `<div>📍 ${this._escapeHtml(addr)}</div>`;
+    }
+    if (poi.tags.website) {
+      const url = poi.tags.website.startsWith("http") ? poi.tags.website : "https://" + poi.tags.website;
+      extra += `<div>🌐 <a href="${this._escapeHtml(url)}" target="_blank" rel="noopener">Website</a></div>`;
+    }
+    return `<div class="eb-poi-popup">
+      <div class="eb-poi-title">${poi.catIcon} ${safeName}</div>
+      <div class="eb-poi-cat">${this._escapeHtml(poi.catLabel)}</div>
+      ${extra}
+      <a class="eb-poi-link" href="${osmUrl}" target="_blank" rel="noopener noreferrer">${this._t("poi_open_osm")}</a>
+    </div>`;
+  }
+
+  _escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+
+  // -------------------------------------------------------------------------
+  // Status-Chip auf der Karte (Routing läuft / Fehler + Servertext klein)
+  // -------------------------------------------------------------------------
+
+  _setStatus(main, sub = "") {
+    const box = this.querySelector("#rp-status");
+    if (!box) return;
+    if (!main) {
+      box.style.display = "none";
+      return;
+    }
+    this.querySelector("#rp-status-main").textContent = main;
+    const subEl = this.querySelector("#rp-status-sub");
+    subEl.textContent = sub || "";
+    subEl.style.display = sub ? "" : "none";
+    box.style.display = "";
+  }
+}
+
+class BoschEBikeRoutePlannerCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this._hass = null;
+    this._config = null;
+    this._built = false;
+  }
+
+  // DOM nur EINMAL bauen (Muster wie BoschEBike3DMapCardEditor): ein
+  // innerHTML-Re-Render nach jedem config-changed-Roundtrip würde nach
+  // jedem Feld-Commit den Eingabe-Fokus wegschießen (v1.16.5-Bug-Klasse).
+  // Danach synct setConfig nur noch die Feld-Werte.
+  setConfig(config) {
+    this._config = config;
+    if (!this._built) {
+      // Lazy: erst rendern, wenn hass da ist — die Entity-Dropdowns
+      // brauchen hass.states und die Labels die hass-Sprache.
+      if (this._hass) this._render();
+    } else {
+      this._sync();
+    }
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (!this._built && this._config) this._render();
+  }
+
+  _escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+
+  _emit() {
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: this._config } }));
+  }
+
+  _entityOptions(filter, selectedId) {
+    let opts = `<option value="">—</option>`;
+    const ids = this._hass
+      ? Object.keys(this._hass.states).filter(filter).sort()
+      : [];
+    for (const e of ids) {
+      const selected = selectedId === e ? " selected" : "";
+      opts += `<option value="${this._escapeHtml(e)}"${selected}>${this._escapeHtml(e)}</option>`;
+    }
+    return opts;
+  }
+
+  // Wird nach dem einmaligen _render() bei jedem setConfig aufgerufen:
+  // aktualisiert nur die Feld-Werte, ohne das DOM neu zu bauen.
+  _sync() {
+    const cfg = this._config || {};
+    const set = (id, v) => {
+      const el = this.querySelector(id);
+      if (el && el.value !== v) el.value = v;
+    };
+    set("#rp-h-in", String(parseInt(cfg.height, 10) || 480));
+    set("#rp-title-in", cfg.title || "");
+    set("#rp-brouter-in", cfg.brouter_url || "");
+    set("#rp-entity-in", cfg.entity || "");
+    set("#rp-soc-in", cfg.soc_entity || "");
+  }
+
+  _render() {
+    if (!this._config) return;
+    const cfg = this._config;
+    const t = (k, ...a) => ebT(this._hass, k, ...a);
+    const inputStyle = "width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#222);";
+    const labelStyle = "display:block;margin-top:14px;margin-bottom:6px;font-weight:500";
+    const hintStyle = "display:block;margin-top:4px;font-size:12px;color:var(--secondary-text-color,#777)";
+
+    const rangeIds = new Set(boschRangeEntityIds(this._hass, "estimated_range_full"));
+    const rangeOpts = this._entityOptions(
+      (e) => rangeIds.has(e) || e.endsWith("_estimated_range_full"), cfg.entity);
+    const socOpts = this._entityOptions((e) => e.startsWith("sensor."), cfg.soc_entity);
+
+    this.innerHTML = `<div style="padding:16px">
+      <label style="${labelStyle.replace('margin-top:14px;', '')}">${t("editor_height")}</label>
+      <input type="number" value="${parseInt(cfg.height, 10) || 480}" min="200" max="1000" step="20" style="${inputStyle}" id="rp-h-in">
+
+      <label style="${labelStyle}">${t("editor_title")}</label>
+      <input type="text" value="${this._escapeHtml(cfg.title || '')}" placeholder="${t("rp_default_title")}" style="${inputStyle}" id="rp-title-in">
+      <span style="${hintStyle}">${t("editor_title_hint")}</span>
+
+      <label style="${labelStyle}">${t("rp_editor_brouter_url")}</label>
+      <input type="text" value="${this._escapeHtml(cfg.brouter_url || '')}" placeholder="https://brouter.de" style="${inputStyle}" id="rp-brouter-in">
+
+      <label style="${labelStyle}">${t("rp_editor_entity")}</label>
+      <select id="rp-entity-in" style="${inputStyle}">${rangeOpts}</select>
+      <span style="${hintStyle}">${t("rp_editor_entity_hint")}</span>
+
+      <label style="${labelStyle}">${t("rp_editor_soc")}</label>
+      <select id="rp-soc-in" style="${inputStyle}">${socOpts}</select>
+      <span style="${hintStyle}">${t("rp_editor_soc_hint")}</span>
+
+      <span style="${hintStyle};margin-top:14px;">${t("rp_privacy_note")}</span>
+    </div>`;
+
+    this.querySelector("#rp-h-in").addEventListener("change", (e) => {
+      this._config = { ...this._config, height: parseInt(e.target.value, 10) || 480 };
+      this._emit();
+    });
+    this.querySelector("#rp-title-in").addEventListener("change", (e) => {
+      const v = e.target.value.trim();
+      this._config = { ...this._config };
+      if (v) this._config.title = v;
+      else delete this._config.title;
+      this._emit();
+    });
+    this.querySelector("#rp-brouter-in").addEventListener("change", (e) => {
+      const v = e.target.value.trim();
+      this._config = { ...this._config };
+      if (v) this._config.brouter_url = v;
+      else delete this._config.brouter_url;
+      this._emit();
+    });
+    this.querySelector("#rp-entity-in").addEventListener("change", (e) => {
+      const v = e.target.value;
+      this._config = { ...this._config };
+      if (v) this._config.entity = v;
+      else delete this._config.entity;
+      this._emit();
+    });
+    this.querySelector("#rp-soc-in").addEventListener("change", (e) => {
+      const v = e.target.value;
+      this._config = { ...this._config };
+      if (v) this._config.soc_entity = v;
+      else delete this._config.soc_entity;
+      this._emit();
+    });
+
+    this._built = true;
+  }
+}
+
 if (!customElements.get("bosch-ebike-map-card")) {
   customElements.define("bosch-ebike-map-card", BoschEBikeMapCard);
 }
@@ -10794,6 +12902,12 @@ if (!customElements.get("bosch-ebike-3d-map-card")) {
 }
 if (!customElements.get("bosch-ebike-3d-map-card-editor")) {
   customElements.define("bosch-ebike-3d-map-card-editor", BoschEBike3DMapCardEditor);
+}
+if (!customElements.get("bosch-ebike-routeplanner-card")) {
+  customElements.define("bosch-ebike-routeplanner-card", BoschEBikeRoutePlannerCard);
+}
+if (!customElements.get("bosch-ebike-routeplanner-card-editor")) {
+  customElements.define("bosch-ebike-routeplanner-card-editor", BoschEBikeRoutePlannerCardEditor);
 }
 
 window.customCards = window.customCards || [];
@@ -10834,6 +12948,14 @@ if (!window.customCards.find((c) => c.type === "bosch-ebike-3d-map-card")) {
     type: "bosch-ebike-3d-map-card",
     name: "Bosch eBike 3D-Karte",
     description: "Tour-Detailansicht in 3D mit Gebäude-Extrusionen, Zeit-Slider und Sonnenstand-Lichteffekt (MapLibre + OpenFreeMap)",
+    preview: false,
+  });
+}
+if (!window.customCards.find((c) => c.type === "bosch-ebike-routeplanner-card")) {
+  window.customCards.push({
+    type: "bosch-ebike-routeplanner-card",
+    name: "Bosch eBike Route Planner",
+    description: "Plan bike routes with BRouter: consumption estimate, battery check and GPX export",
     preview: false,
   });
 }

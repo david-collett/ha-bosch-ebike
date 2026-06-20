@@ -29,6 +29,7 @@ from .const import (
     CONF_LIVE_SOC_ENTITY,
 )
 from .live_enrichment import get_state_at, parse_iso_utc
+from .range_estimate import compute_range_estimate, track_distance_m
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,9 +51,13 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.api = api
         self._initial_import_done = False
+        # Sorted newest-first; range_estimate and latest_activity rely on this.
         self._all_activities: list[dict[str, Any]] = []
-        self._latest_activity_details: list[dict[str, Any]] | None = None
+        self._latest_activity_details: dict[str, Any] | None = None
         self._latest_activity_id: str | None = None
+        # Per-bike Data Act endpoints (refreshed every poll)
+        self._bike_pass: dict[str, dict[str, Any]] = {}
+        self._service_records: dict[str, dict[str, Any]] = {}
         # Battery consumption tracking (Wh delta between polls)
         self._prev_delivered_wh: float | None = None
         self._prev_activity_ids: set[str] = set()
@@ -377,8 +382,8 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def invalidate_live_enrichment_cache(self) -> None:
         """Clear the per-activity enrichment cache.
 
-        Called when the user changes the live-sensor options or when the
-        battery capacity changes (live consumption depends on it).
+        Called when the battery capacity changes (live consumption depends
+        on it). Options changes reload the entry and rebuild this object.
         """
         self._live_enrichment_cache.clear()
 
@@ -486,7 +491,23 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if latest:
                     latest_id = latest.get("id")
                     if self._all_activities and self._all_activities[0].get("id") == latest_id:
-                        # Same activity, update in place
+                        # Same activity, update in place — but keep a derived
+                        # distance (BLE odometer / GPS track): the fresh cloud
+                        # copy would silently revert it and the enrichment
+                        # cache prevents re-deriving (issue #31).
+                        # A gps_track value is only kept while it is still >=
+                        # the fresh cloud summary: tracks are fetched once and
+                        # can be stale (ride still uploading) — a GROWING
+                        # summary must win over a stale track-derived value.
+                        old = self._all_activities[0]
+                        src = old.get("_distance_source")
+                        if src == "ble_live" or (
+                            src == "gps_track"
+                            and float(old.get("distance") or 0)
+                            >= float(latest.get("distance") or 0)
+                        ):
+                            latest["distance"] = old.get("distance")
+                            latest["_distance_source"] = src
                         self._all_activities[0] = latest
                     else:
                         # New activity, prepend
@@ -500,28 +521,84 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except Exception as err:
             raise UpdateFailed(f"Error fetching data: {err}") from err
 
-        # Persist updated tokens back to config entry
-        self.hass.config_entries.async_update_entry(
-            self.config_entry,
-            data={
-                **self.config_entry.data,
-                "access_token": self.api.access_token,
-                "refresh_token": self.api.refresh_token,
-            },
-        )
+        # Persist updated tokens back to the config entry, but only when they
+        # actually changed (a token refresh happened). Writing on every poll
+        # would cause needless storage writes.
+        if (
+            self.api.access_token != self.config_entry.data.get("access_token")
+            or self.api.refresh_token != self.config_entry.data.get("refresh_token")
+        ):
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data={
+                    **self.config_entry.data,
+                    "access_token": self.api.access_token,
+                    "refresh_token": self.api.refresh_token,
+                },
+            )
 
         latest_activity = self._all_activities[0] if self._all_activities else None
 
         # Fetch GPS details for the latest activity (for start/end coordinates)
         if latest_activity:
             activity_id = latest_activity.get("id")
-            if activity_id and activity_id != self._latest_activity_id:
+            # Fetch the GPS track for the latest activity. We refetch on every
+            # poll while the ride stays the latest one AND its distance is not
+            # yet confirmed from a derived source: the track can still be
+            # uploading when we first see the activity (the ride may not be
+            # finished in the Flow app yet), so a later poll may carry the full
+            # track the distance sanity-check below needs (issue #31).
+            distance_confirmed = latest_activity.get("_distance_source") in (
+                "ble_live",
+                "gps_track",
+            )
+            if activity_id and (
+                activity_id != self._latest_activity_id or not distance_confirmed
+            ):
                 try:
                     details = await self.api.get_activity_detail(activity_id)
                     self._latest_activity_details = details
                     self._latest_activity_id = activity_id
-                except Exception:
-                    pass  # GPS details are optional, don't fail the whole update
+                except Exception as err:  # noqa: BLE001
+                    # GPS details are optional - never fail the whole update.
+                    _LOGGER.debug(
+                        "Could not fetch GPS details for activity %s: %s",
+                        activity_id, err,
+                    )
+
+            # Sanity-check the summary distance against the GPS track
+            # (issue #31): the cloud summary sometimes reports fewer metres
+            # than the recorded track covers. Only ever corrects UPWARDS
+            # (a partially uploaded track must never shrink the value) and
+            # never touches a BLE-derived distance.
+            if (
+                self._latest_activity_details
+                and self._latest_activity_id == activity_id
+                and latest_activity.get("_distance_source") != "ble_live"
+            ):
+                track_m = track_distance_m(self._latest_activity_details)
+                summary_m = float(latest_activity.get("distance") or 0)
+                if (
+                    track_m is not None
+                    and track_m > summary_m * 1.05
+                    and track_m - summary_m > 200.0
+                    # Absolute Plausibilitäts-Obergrenze (max. 500 km) gegen
+                    # echten Müll (Einheiten-Überraschung im Track-Feld, GPS-
+                    # Ausreißer in der Haversine-Summe). KEINE relative Grenze
+                    # mehr (früher: max. 2x Summary): eine in der Flow App noch
+                    # nicht beendete Tour meldet als Summary nur ein Teilstück,
+                    # sodass der vollständige Track ein Vielfaches betragen kann
+                    # — genau dieser Fall (0,9 km gemeldet, 5,4 km gefahren)
+                    # wurde von der 2x-Grenze faelschlich blockiert (issue #31).
+                    and track_m <= 500_000.0
+                ):
+                    latest_activity["distance"] = round(track_m, 1)
+                    latest_activity["_distance_source"] = "gps_track"
+                    _LOGGER.info(
+                        "Distance for activity %s corrected from GPS track: "
+                        "%.0f m (summary said %.0f m)",
+                        activity_id, track_m, summary_m,
+                    )
 
         # Restore persisted consumption state on first run
         await self.async_load_persisted_state()
@@ -551,8 +628,48 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if self._check_service_and_maintenance(bikes):
             state_changed = True
 
+        # Estimated range: distance-weighted Wh/km over the last ~500 km,
+        # computed from data already in memory (no extra API calls).
+        range_estimate: dict[str, dict[str, Any]] = {}
+        single_bike = len(bikes) == 1
+        for bike in bikes:
+            bid = bike.get("id")
+            if not bid:
+                continue
+            est = compute_range_estimate(
+                self._all_activities,
+                self._activity_bike,
+                self._activity_consumption,
+                bid,
+                fallback_all=single_bike,
+            )
+            if est:
+                range_estimate[bid] = est
+
         if state_changed:
             await self._async_save_state()
+
+        # Per-bike Data Act endpoints (Bike Pass + Digital Service Book).
+        # Fetched every poll; each call is isolated so a failure never fails
+        # the whole update (mirrors the GPS-details handling above).
+        # Prune stale entries so a removed bike's data does not linger forever.
+        current_ids = {b.get("id") for b in bikes if b.get("id")}
+        for stale in [k for k in self._bike_pass if k not in current_ids]:
+            del self._bike_pass[stale]
+        for stale in [k for k in self._service_records if k not in current_ids]:
+            del self._service_records[stale]
+        for bike in bikes:
+            bike_id = bike.get("id")
+            if not bike_id:
+                continue
+            try:
+                self._bike_pass[bike_id] = await self.api.get_bike_pass(bike_id)
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.debug("Could not fetch bike pass for %s: %s", bike_id, err)
+            try:
+                self._service_records[bike_id] = await self.api.get_service_records(bike_id)
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.debug("Could not fetch service records for %s: %s", bike_id, err)
 
         return {
             "bikes": bikes,
@@ -564,6 +681,9 @@ class BoschEBikeCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "maintenance": self._maintenance,
             "service_overrides": self._service_overrides,
             "battery_capacity_wh": self._battery_capacity_wh,
+            "range_estimate": range_estimate,
+            "bike_pass": self._bike_pass,
+            "service_records": self._service_records,
         }
 
     # -- Service & maintenance --

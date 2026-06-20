@@ -1,0 +1,243 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bosch eBike instellen",
+        "description": "Voer de **Client-ID** in uit je app-registratie in het [Bosch Flow-portaal]({portal_url}).\n\n⚠️ **Belangrijk:** Je moet de Client-ID *vóór* het inloggen in het Flow-portaal **activeren** — anders weigert Bosch de login met \"client niet gevonden\". Na het verzenden word je naar de Bosch-login geleid en automatisch teruggebracht naar Home Assistant.",
+        "data": {
+          "client_id": "Client-ID"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Bosch eBike opnieuw aanmelden",
+        "description": "Je Bosch-login is verlopen. Klik op **Verzenden** om opnieuw in te loggen. Zorg dat je Client-ID nog actief is in het [Flow-portaal]({portal_url})."
+      }
+    },
+    "abort": {
+      "already_configured": "Deze Client-ID is al geconfigureerd.",
+      "reauth_successful": "Het opnieuw aanmelden is gelukt.",
+      "oauth_error": "Ongeldige tokengegevens ontvangen van Bosch.",
+      "oauth_failed": "Fout bij het ophalen van het accesstoken van Bosch.",
+      "oauth_timeout": "Time-out bij de tokenuitwisseling met Bosch.",
+      "oauth_unauthorized": "Bosch heeft het tokenverzoek geweigerd (niet geautoriseerd). Is de Client-ID geactiveerd in het Flow-portaal?",
+      "missing_configuration": "De integratie is niet geconfigureerd. Volg de documentatie.",
+      "authorize_url_timeout": "Time-out bij het genereren van de autorisatie-URL.",
+      "no_url_available": "Geen URL beschikbaar voor autorisatie. Zie de documentatie.",
+      "user_rejected_authorize": "De autorisatie bij Bosch is geweigerd."
+    },
+    "create_entry": {
+      "default": "Succesvol aangemeld bij Bosch eBike."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Live-databronnen (optioneel)",
+        "description": "Koppel optioneel de live kilometerstand- en accusensor uit de ESPHome Bosch eBike LDI-bridge. Indien ingesteld berekent de integratie de exacte ritafstand en het werkelijke verbruik uit deze live-waarden in plaats van de cloud-schattingen. Leeg laten om het bestaande gedrag te behouden.",
+        "data": {
+          "live_odometer_entity": "Live kilometerstand-sensor (km)",
+          "live_soc_entity": "Live accuniveau-sensor (%)"
+        },
+        "data_description": {
+          "live_odometer_entity": "Sensor met de kilometerstand van de eBike in kilometers (bijv. sensor.ebike_odometer_live).",
+          "live_soc_entity": "Sensor met het accuniveau in procenten (bijv. sensor.ebike_battery_soc_live)."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "odometer": {
+        "name": "Kilometerstand"
+      },
+      "motor_total_hours": {
+        "name": "Motor-bedrijfsuren"
+      },
+      "motor_assist_hours": {
+        "name": "Motor-ondersteuningsuren"
+      },
+      "max_assist_speed": {
+        "name": "Max. ondersteuningssnelheid"
+      },
+      "active_assist_modes": {
+        "name": "Actieve ondersteuningsmodi"
+      },
+      "walk_assist_speed": {
+        "name": "Loophulp-snelheid"
+      },
+      "next_service_odometer": {
+        "name": "Volgende service (km)"
+      },
+      "next_service_date": {
+        "name": "Volgende service (datum)"
+      },
+      "service_due_in_days": {
+        "name": "Service over (dagen)"
+      },
+      "service_due_in_km": {
+        "name": "Service over (km)"
+      },
+      "maintenance_overview": {
+        "name": "Onderhoudsoverzicht"
+      },
+      "estimated_range_full": {
+        "name": "Geschatte actieradius (volle accu)"
+      },
+      "estimated_range_current": {
+        "name": "Geschatte actieradius (actueel)"
+      },
+      "last_ride_distance": {
+        "name": "Laatste rit: afstand"
+      },
+      "last_ride_duration": {
+        "name": "Laatste rit: duur"
+      },
+      "last_ride_avg_speed": {
+        "name": "Laatste rit: gem. snelheid"
+      },
+      "last_ride_max_speed": {
+        "name": "Laatste rit: max. snelheid"
+      },
+      "last_ride_calories": {
+        "name": "Laatste rit: calorieën"
+      },
+      "last_ride_elevation_gain": {
+        "name": "Laatste rit: hoogtemeters ↑"
+      },
+      "last_ride_elevation_loss": {
+        "name": "Laatste rit: hoogtemeters ↓"
+      },
+      "last_ride_date": {
+        "name": "Laatste rit: datum"
+      },
+      "last_ride_title": {
+        "name": "Laatste rit: titel"
+      },
+      "last_ride_avg_cadence": {
+        "name": "Laatste rit: gem. trapfrequentie"
+      },
+      "last_ride_max_cadence": {
+        "name": "Laatste rit: max. trapfrequentie"
+      },
+      "last_ride_avg_power": {
+        "name": "Laatste rit: gem. vermogen"
+      },
+      "last_ride_max_power": {
+        "name": "Laatste rit: max. vermogen"
+      },
+      "last_ride_battery_wh": {
+        "name": "Laatste rit: accuverbruik (Wh)"
+      },
+      "last_ride_battery_percent": {
+        "name": "Laatste rit: accuverbruik (%)"
+      },
+      "last_ride_difficulty": {
+        "name": "Laatste rit: moeilijkheid"
+      },
+      "last_ride_start_location": {
+        "name": "Laatste rit: vertrekpunt"
+      },
+      "last_ride_end_location": {
+        "name": "Laatste rit: eindpunt"
+      },
+      "last_ride_start_time": {
+        "name": "Laatste rit: starttijd"
+      },
+      "last_ride_start_odometer": {
+        "name": "Laatste rit startkilometerstand"
+      },
+      "last_ride_end_time": {
+        "name": "Laatste rit: eindtijd"
+      },
+      "days_since_last_ride": {
+        "name": "Dagen sinds laatste rit"
+      },
+      "total_rides": {
+        "name": "Aantal ritten totaal"
+      },
+      "total_distance_activities": {
+        "name": "Totale afstand (ritten)"
+      },
+      "total_duration": {
+        "name": "Totale rijtijd"
+      },
+      "total_calories": {
+        "name": "Calorieën totaal"
+      },
+      "total_elevation_gain": {
+        "name": "Hoogtemeters totaal"
+      },
+      "avg_speed_all_rides": {
+        "name": "Gem. snelheid (alle ritten)"
+      },
+      "avg_power_all_rides": {
+        "name": "Gem. vermogen (alle ritten)"
+      },
+      "avg_cadence_all_rides": {
+        "name": "Gem. trapfrequentie (alle ritten)"
+      }
+    },
+    "number": {
+      "battery_capacity": {
+        "name": "Accucapaciteit"
+      },
+      "service_due_odometer": {
+        "name": "Service vervalt bij (km)"
+      }
+    },
+    "date": {
+      "service_due_date": {
+        "name": "Service-vervaldatum"
+      }
+    }
+  },
+  "services": {
+    "add_maintenance": {
+      "name": "Onderhoudsitem toevoegen",
+      "description": "Voegt een nieuw, aangepast onderhoudsitem toe voor een fiets (bijv. ketting wisselen elke 3000 km, inspectie elke 365 dagen). Minimaal interval_km of interval_days moet worden opgegeven.",
+      "fields": {
+        "bike_id": {
+          "name": "Fiets-ID",
+          "description": "ID van de fiets (zie attribuut van fiets-sensoren)"
+        },
+        "name": {
+          "name": "Naam",
+          "description": "Vrije tekst, bijv. \"Ketting wisselen\""
+        },
+        "interval_km": {
+          "name": "Interval (km)",
+          "description": "Na hoeveel km moet er een herinnering komen"
+        },
+        "interval_days": {
+          "name": "Interval (dagen)",
+          "description": "Na hoeveel dagen moet er een herinnering komen"
+        }
+      }
+    },
+    "complete_maintenance": {
+      "name": "Onderhoudsitem als gedaan markeren",
+      "description": "Reset de teller van een item (datum + kilometerstand).",
+      "fields": {
+        "bike_id": {
+          "name": "Fiets-ID"
+        },
+        "item_id": {
+          "name": "Item-ID",
+          "description": "Uit het sensor-attribuut \"items\""
+        }
+      }
+    },
+    "remove_maintenance": {
+      "name": "Onderhoudsitem verwijderen",
+      "description": "Verwijdert een eigen onderhoudsitem.",
+      "fields": {
+        "bike_id": {
+          "name": "Fiets-ID"
+        },
+        "item_id": {
+          "name": "Item-ID"
+        }
+      }
+    }
+  }
+}

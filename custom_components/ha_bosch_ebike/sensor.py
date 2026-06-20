@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -14,14 +15,38 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfLength, UnitOfSpeed, UnitOfTime, UnitOfEnergy, UnitOfPower
-from homeassistant.core import HomeAssistant
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfEnergy,
+    UnitOfLength,
+    UnitOfPower,
+    UnitOfSpeed,
+    UnitOfTime,
+)
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import CONF_LIVE_SOC_ENTITY, DOMAIN
 from .coordinator import BoschEBikeCoordinator
+from .profile_extra import (
+    assist_mode_stats,
+    battery_soh,
+    component_inventory,
+    last_service,
+    max_altitude,
+    next_service_date,
+    reachable_ranges,
+)
+
+RANGE_DISCLAIMER = (
+    "Estimate based on your past consumption over the last ~500 km. "
+    "Actual range depends on assist mode, terrain, wind, temperature "
+    "and battery age."
+)
 
 
 def _safe_get(data: dict, *keys: str, default: Any = None) -> Any:
@@ -143,6 +168,14 @@ BIKE_SENSORS: tuple[BoschBikeSensorDescription, ...] = (
         device_class=SensorDeviceClass.DISTANCE,
         icon="mdi:wrench-clock",
         value_fn=lambda d: round(_safe_get(d, "serviceDue", "odometer", default=0) / 1000, 1),
+    ),
+    BoschBikeSensorDescription(
+        key="next_service_date",
+        translation_key="next_service_date",
+        name="Next Service Date",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:wrench-clock",
+        value_fn=lambda d: next_service_date(d),
     ),
 )
 
@@ -300,7 +333,25 @@ ACTIVITY_SENSORS: tuple[BoschBikeSensorDescription, ...] = (
         value_fn=lambda d: _calc_days_since(d),
         is_activity=True,
     ),
+    BoschBikeSensorDescription(
+        key="last_ride_start_odometer",
+        translation_key="last_ride_start_odometer",
+        name="Last Ride Start Odometer",
+        native_unit_of_measurement=UnitOfLength.KILOMETERS,
+        device_class=SensorDeviceClass.DISTANCE,
+        icon="mdi:counter",
+        value_fn=lambda d: _last_ride_start_odometer(d),
+        is_activity=True,
+    ),
 )
+
+
+def _last_ride_start_odometer(activity: dict) -> float | None:
+    """Start odometer of the latest ride in km, or None if absent."""
+    raw = _safe_get(activity, "startOdometer")
+    if not isinstance(raw, (int, float)) or isinstance(raw, bool):
+        return None
+    return round(raw / 1000, 1)
 
 # Battery consumption sensors (Wh delta tracking)
 BATTERY_CONSUMPTION_SENSORS: tuple[BoschBikeSensorDescription, ...] = (
@@ -461,6 +512,7 @@ async def async_setup_entry(
     entities: list[BoschEBikeSensor] = []
 
     bikes = coordinator.data.get("bikes", [])
+    soc_entity = entry.options.get(CONF_LIVE_SOC_ENTITY)
     for bike in bikes:
         bike_id = bike.get("id", "unknown")
         drive_name = _safe_get(bike, "driveUnit", "productName") or "eBike"
@@ -476,6 +528,81 @@ async def async_setup_entry(
             entities.extend(
                 _create_battery_sensors(coordinator, bike_id, drive_name, battery, bat_prefix, bat_name)
             )
+
+            # State-of-Health sensors from the service book (dealer capacity
+            # measurement). serialNumber captured at creation time; values
+            # resolve from coordinator.data["service_records"]. Commonly None.
+            bat_serial = battery.get("serialNumber")
+            entities.append(
+                BoschBatterySohSensor(
+                    coordinator, bike_id, drive_name, bat_name, bat_prefix, bat_serial,
+                    field="soh_pct",
+                    name_suffix="State of Health",
+                    key_suffix="soh",
+                    native_unit_of_measurement=PERCENTAGE,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    icon="mdi:battery-heart-variant",
+                    suggested_display_precision=0,
+                )
+            )
+            entities.append(
+                BoschBatterySohSensor(
+                    coordinator, bike_id, drive_name, bat_name, bat_prefix, bat_serial,
+                    field="measured_wh",
+                    name_suffix="Measured Capacity",
+                    key_suffix="measured_capacity",
+                    native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    icon="mdi:battery",
+                )
+            )
+
+        # Per-assist-mode reachable range sensors (one per active mode, API order)
+        for idx, mode in enumerate(reachable_ranges(bike)):
+            mode_name = mode.get("name") or f"Mode {idx + 1}"
+            entities.append(
+                BoschReachableRangeSensor(coordinator, bike_id, drive_name, idx, mode_name)
+            )
+
+        # Per-assist-mode lifetime distance/energy stats from the newest customer
+        # report (service book). These only exist when a dealer customer report is
+        # present, so we create them based on the modes available at setup time.
+        # If service_records is empty/absent at setup, none are created for this
+        # bike (nice-to-have; acceptable).
+        setup_records = coordinator.data.get("service_records", {}).get(bike_id)
+        for idx, stat in enumerate(assist_mode_stats(setup_records)):
+            mode_name = stat.get("name") or f"Mode {idx + 1}"
+            entities.append(
+                BoschLifetimeStatSensor(
+                    coordinator, bike_id, drive_name, idx, mode_name, kind="distance"
+                )
+            )
+            entities.append(
+                BoschLifetimeStatSensor(
+                    coordinator, bike_id, drive_name, idx, mode_name, kind="energy"
+                )
+            )
+
+        # Service history (always created; show unknown when no service record)
+        entities.append(
+            BoschLastServiceSensor(coordinator, bike_id, drive_name, kind="date")
+        )
+        entities.append(
+            BoschLastServiceSensor(coordinator, bike_id, drive_name, kind="dealer")
+        )
+        entities.append(
+            BoschLastServiceSensor(coordinator, bike_id, drive_name, kind="odometer")
+        )
+
+        # Component inventory (diagnostic)
+        entities.append(
+            BoschComponentInventorySensor(coordinator, bike_id, drive_name)
+        )
+
+        # Last ride max altitude (single instance, derived from activity details)
+        entities.append(
+            BoschMaxAltitudeSensor(coordinator, bike_id, drive_name)
+        )
 
         # Activity sensors (attached to first bike)
         for desc in ACTIVITY_SENSORS:
@@ -496,6 +623,13 @@ async def async_setup_entry(
         # Service-due derived sensors (days/km remaining)
         entities.append(BoschServiceDueSensor(coordinator, bike_id, drive_name, kind="days"))
         entities.append(BoschServiceDueSensor(coordinator, bike_id, drive_name, kind="km"))
+
+        # Estimated range (clearly labelled estimate, derived from history)
+        entities.append(BoschRangeEstimateSensor(coordinator, bike_id, drive_name))
+        if soc_entity:
+            entities.append(
+                BoschCurrentRangeSensor(coordinator, bike_id, drive_name, soc_entity)
+            )
 
         # Maintenance overview (count of items due/overdue + full list as attributes)
         entities.append(BoschMaintenanceOverviewSensor(coordinator, bike_id, drive_name))
@@ -589,6 +723,358 @@ class BoschEBikeSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
             if bike.get("id") == self._bike_id:
                 return self.entity_description.value_fn(bike)
         return None
+
+
+class BoschReachableRangeSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Bosch per-assist-mode reachable range (one sensor per active mode).
+
+    Uses a literal mode name (like the per-battery sensors), so no
+    translation_key is required. Resolves its value from the live bike data
+    via profile_extra.reachable_ranges by position in API order.
+    """
+
+    _attr_has_entity_name = True
+    _attr_device_class = SensorDeviceClass.DISTANCE
+    _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:map-marker-distance"
+    _attr_suggested_display_precision = 1
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+        index: int,
+        mode_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._index = index
+        self._mode_name = mode_name
+        self._attr_name = f"Reachable Range {mode_name}"
+        self._attr_unique_id = f"{bike_id}_reachable_range_{index}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the reachable range (km) for this mode by API position."""
+        for bike in self.coordinator.data.get("bikes", []):
+            if bike.get("id") == self._bike_id:
+                ranges = reachable_ranges(bike)
+                if len(ranges) <= self._index:
+                    return None
+                return ranges[self._index]["range_km"]
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the assist mode this range belongs to."""
+        return {"assist_mode": self._mode_name}
+
+
+class BoschBatterySohSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Per-battery State-of-Health / measured-capacity sensor.
+
+    Reads the dealer capacity measurement from the service book via
+    profile_extra.battery_soh(service_records, serial). The serial number is
+    captured at creation time and the value is resolved live from
+    coordinator.data["service_records"], keyed by bike_id. A measurement only
+    exists if a dealer performed a battery capacity test, so in the common case
+    battery_soh returns None and the entity reports unavailable / None.
+
+    Uses a literal name (like the other per-battery sensors), so no
+    translation_key is required.
+    """
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+        bat_name: str,
+        prefix: str,
+        serial: str | None,
+        *,
+        field: str,
+        name_suffix: str,
+        key_suffix: str,
+        native_unit_of_measurement: str | None = None,
+        device_class: SensorDeviceClass | None = None,
+        state_class: SensorStateClass | None = None,
+        icon: str | None = None,
+        suggested_display_precision: int | None = None,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._serial = serial
+        self._field = field
+        self._attr_name = f"{bat_name} {name_suffix}"
+        self._attr_unique_id = f"{bike_id}_{prefix}_{key_suffix}"
+        self._attr_native_unit_of_measurement = native_unit_of_measurement
+        self._attr_device_class = device_class
+        self._attr_state_class = state_class
+        if icon is not None:
+            self._attr_icon = icon
+        if suggested_display_precision is not None:
+            self._attr_suggested_display_precision = suggested_display_precision
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    def _soh(self) -> dict | None:
+        """Resolve the SoH data dict for this battery, or None."""
+        if not self._serial:
+            return None
+        records = self.coordinator.data.get("service_records", {}).get(self._bike_id)
+        return battery_soh(records, self._serial)
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the requested SoH field, or None if no measurement exists."""
+        soh = self._soh()
+        if soh is None:
+            return None
+        return soh.get(self._field)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the remaining SoH fields so they are not lost."""
+        if self._field != "soh_pct":
+            return {}
+        soh = self._soh()
+        if soh is None:
+            return {}
+        return {
+            "nominal_wh": soh.get("nominal_wh"),
+            "full_charge_cycles": soh.get("full_charge_cycles"),
+            "measured_at": soh.get("measured_at"),
+        }
+
+
+class BoschLifetimeStatSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Per-assist-mode lifetime distance/energy from the service book.
+
+    Created one per mode (by API position) at setup time from the newest
+    customer report. Resolves its value live from
+    coordinator.data["service_records"] via profile_extra.assist_mode_stats,
+    index-guarded. Uses a literal name (like the reachable-range / SoH
+    sensors), so no translation_key is required.
+    """
+
+    _attr_has_entity_name = True
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+        index: int,
+        mode_name: str,
+        *,
+        kind: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._index = index
+        self._mode_name = mode_name
+        self._kind = kind  # "distance" or "energy"
+        if kind == "distance":
+            self._field = "distance_km"
+            self._attr_name = f"Lifetime Distance {mode_name}"
+            self._attr_unique_id = f"{bike_id}_lifetime_distance_{index}"
+            self._attr_device_class = SensorDeviceClass.DISTANCE
+            self._attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
+            self._attr_icon = "mdi:map-marker-distance"
+        else:
+            self._field = "energy_wh"
+            self._attr_name = f"Lifetime Energy {mode_name}"
+            self._attr_unique_id = f"{bike_id}_lifetime_energy_{index}"
+            self._attr_device_class = SensorDeviceClass.ENERGY
+            self._attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
+            self._attr_icon = "mdi:lightning-bolt"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the lifetime value for this mode by API position."""
+        records = self.coordinator.data.get("service_records", {}).get(self._bike_id)
+        stats = assist_mode_stats(records)
+        if len(stats) <= self._index:
+            return None
+        return stats[self._index].get(self._field)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the assist mode this stat belongs to."""
+        return {"assist_mode": self._mode_name}
+
+
+class BoschLastServiceSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Last service date / dealer / odometer from the service book.
+
+    Always created per bike; resolves live from
+    coordinator.data["service_records"] via profile_extra.last_service. Shows
+    unknown / None when no service record exists. Uses a literal name (like the
+    other service-book sensors), so no translation_key is required.
+    """
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+        *,
+        kind: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._kind = kind  # "date" | "dealer" | "odometer"
+        if kind == "date":
+            self._attr_name = "Last Service Date"
+            self._attr_unique_id = f"{bike_id}_last_service_date"
+            self._attr_device_class = SensorDeviceClass.TIMESTAMP
+            self._attr_icon = "mdi:wrench-clock"
+        elif kind == "dealer":
+            self._attr_name = "Last Service Dealer"
+            self._attr_unique_id = f"{bike_id}_last_service_dealer"
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+            self._attr_icon = "mdi:store"
+        else:
+            self._attr_name = "Last Service Odometer"
+            self._attr_unique_id = f"{bike_id}_last_service_odometer"
+            self._attr_device_class = SensorDeviceClass.DISTANCE
+            self._attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
+            self._attr_icon = "mdi:counter"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    def _service(self) -> dict | None:
+        records = self.coordinator.data.get("service_records", {}).get(self._bike_id)
+        return last_service(records)
+
+    @property
+    def native_value(self) -> Any:
+        """Return the requested last-service field, or None."""
+        service = self._service()
+        if service is None:
+            return None
+        if self._kind == "date":
+            return _parse_timestamp(service.get("date"))
+        if self._kind == "dealer":
+            return service.get("dealer")
+        return service.get("odometer_km")
+
+
+class BoschComponentInventorySensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Diagnostic component inventory for one bike.
+
+    State: the head-unit product name (kept short). Attributes: the full
+    inventory dict (head_unit, remote_control, connect_module, has_abs).
+    Reads the live bike from coordinator.data["bikes"] via
+    profile_extra.component_inventory. Uses a literal name, so no
+    translation_key is required.
+    """
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:format-list-bulleted"
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._attr_name = "Components"
+        self._attr_unique_id = f"{bike_id}_components"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    def _inventory(self) -> dict | None:
+        for bike in self.coordinator.data.get("bikes", []):
+            if bike.get("id") == self._bike_id:
+                return component_inventory(bike)
+        return None
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the head-unit product name (kept short)."""
+        inv = self._inventory()
+        if inv is None:
+            return None
+        return inv.get("head_unit") or "Unknown"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the full component inventory."""
+        return self._inventory() or {}
+
+
+class BoschMaxAltitudeSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Max altitude of the latest ride (single instance per bike).
+
+    Mirrors BoschRangeEstimateSensor's single-instance attachment. Reads
+    coordinator.data["latest_activity_details"] and returns
+    profile_extra.max_altitude(details) in metres. Uses a literal name, so no
+    translation_key is required.
+    """
+
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = UnitOfLength.METERS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:image-filter-hdr"
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._attr_name = "Last Ride Max Altitude"
+        self._attr_unique_id = f"{bike_id}_last_ride_max_altitude"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the max altitude (m) of the latest ride, or None."""
+        details = self.coordinator.data.get("latest_activity_details")
+        return max_altitude(details)
 
 
 class BoschGPSSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
@@ -718,6 +1204,127 @@ class BoschBatteryConsumptionSensor(CoordinatorEntity[BoschEBikeCoordinator], Se
         }
 
 
+class BoschRangeEstimateSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
+    """Estimated range at full battery, derived from past consumption.
+
+    Clearly labelled as an estimate: name prefix, disclaimer attribute and
+    the underlying numbers (wh_per_km, tours_used, window_km) exposed.
+    """
+
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
+    _attr_device_class = SensorDeviceClass.DISTANCE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_icon = "mdi:map-marker-distance"
+    _attr_translation_key = "estimated_range_full"
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._bike_id = bike_id
+        self._attr_unique_id = f"{bike_id}_estimated_range_full"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, bike_id)},
+            name=drive_name,
+            manufacturer="Bosch",
+            model=drive_name,
+        )
+
+    def _estimate(self) -> dict[str, Any] | None:
+        return (self.coordinator.data.get("range_estimate") or {}).get(self._bike_id)
+
+    @property
+    def native_value(self) -> int | None:
+        est = self._estimate()
+        if not est or not est.get("wh_per_km"):
+            return None
+        capacity = self.coordinator.data.get("battery_capacity_wh")
+        if not capacity:
+            return None
+        return round(capacity / est["wh_per_km"])
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        est = self._estimate()
+        if not est:
+            return {"disclaimer": RANGE_DISCLAIMER}
+        return {
+            "disclaimer": RANGE_DISCLAIMER,
+            "wh_per_km": est.get("wh_per_km"),
+            "tours_used": est.get("tours_used"),
+            "window_km": est.get("window_km"),
+            "newest_tour_date": est.get("newest_tour_date"),
+            "battery_capacity_wh": self.coordinator.data.get("battery_capacity_wh"),
+        }
+
+
+class BoschCurrentRangeSensor(BoschRangeEstimateSensor):
+    """Estimated remaining range from live SoC × capacity ÷ avg consumption.
+
+    Only created when the live SoC sensor (ESPHome bridge) is linked in the
+    options. Listens to that entity so the value updates immediately, not
+    just on the 30-minute poll.
+    """
+
+    _attr_translation_key = "estimated_range_current"
+
+    def __init__(
+        self,
+        coordinator: BoschEBikeCoordinator,
+        bike_id: str,
+        drive_name: str,
+        soc_entity_id: str,
+    ) -> None:
+        super().__init__(coordinator, bike_id, drive_name)
+        self._attr_unique_id = f"{bike_id}_estimated_range_current"
+        self._soc_entity_id = soc_entity_id
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            async_track_state_change_event(
+                self.hass, [self._soc_entity_id], self._on_soc_change
+            )
+        )
+
+    @callback
+    def _on_soc_change(self, event: Event) -> None:
+        self.async_write_ha_state()
+
+    def _current_soc(self) -> float | None:
+        state = self.hass.states.get(self._soc_entity_id)
+        if state is None or state.state in ("unknown", "unavailable"):
+            return None
+        try:
+            soc = float(state.state)
+        except ValueError:
+            return None
+        if not math.isfinite(soc):
+            return None
+        return max(0.0, min(100.0, soc))
+
+    @property
+    def native_value(self) -> int | None:
+        full = super().native_value
+        if full is None:
+            return None
+        soc = self._current_soc()
+        if soc is None:
+            return None
+        return round(full * soc / 100.0)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        attrs = dict(super().extra_state_attributes or {})
+        attrs["soc_source"] = self._soc_entity_id
+        attrs["current_soc"] = self._current_soc()
+        return attrs
+
+
 class BoschServiceDueSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEntity):
     """Days or kilometres remaining until the next Bosch service is due."""
 
@@ -735,12 +1342,10 @@ class BoschServiceDueSensor(CoordinatorEntity[BoschEBikeCoordinator], SensorEnti
         self._kind = kind  # "days" or "km"
         if kind == "days":
             self._attr_translation_key = "service_due_in_days"
-            self._attr_name = "Service Due In Days"
             self._attr_native_unit_of_measurement = "d"
             self._attr_icon = "mdi:calendar-clock"
         else:
             self._attr_translation_key = "service_due_in_km"
-            self._attr_name = "Service Due In Kilometres"
             self._attr_native_unit_of_measurement = "km"
             self._attr_icon = "mdi:road"
         self._attr_unique_id = f"{bike_id}_service_due_in_{kind}"
@@ -801,7 +1406,6 @@ class BoschMaintenanceOverviewSensor(CoordinatorEntity[BoschEBikeCoordinator], S
     """
 
     _attr_has_entity_name = True
-    _attr_name = "Maintenance Items Due"
     _attr_translation_key = "maintenance_overview"
     _attr_icon = "mdi:tools"
 

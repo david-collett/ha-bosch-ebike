@@ -3,12 +3,12 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
 
-> **Deutsch** | [English](#english)
+> **Deutsch** | [English](#english) | [Nederlands](https://github.com/Xunil99/ha-bosch-ebike/blob/main/README.nl.md) | [Français](https://github.com/Xunil99/ha-bosch-ebike/blob/main/README.fr.md) | [Italiano](https://github.com/Xunil99/ha-bosch-ebike/blob/main/README.it.md) | [Español](https://github.com/Xunil99/ha-bosch-ebike/blob/main/README.es.md)
 
-> ### ⚠️ Regionale Voraussetzung / Regional requirement
+> **⚠️ Update-Hinweis (ab v1.17.6):** Der Integrationsordner heißt jetzt `ha_bosch_ebike` (vorher `bosch_ebike`). Deine Einrichtung, Geräte und Einstellungen bleiben unverändert. Falls nach dem HACS-Update **beide** Ordner in `config/custom_components/` liegen, lösche den alten `bosch_ebike` einmalig und starte Home Assistant neu.
+
+> ### ⚠️ Regionale Voraussetzung
 > Diese Integration funktioniert **ausschließlich mit einem Bosch SingleKey-ID-Konto, das innerhalb der EU registriert ist**. Sie nutzt die offizielle Bosch Data Act API, deren Verfügbarkeit auf EU-Konten beschränkt ist. Konten aus anderen Regionen werden vom API-Endpoint abgelehnt und die Integration kann sich nicht anmelden.
->
-> *This integration only works with a Bosch SingleKey-ID account registered inside the EU. It uses the official Bosch Data Act API, whose availability is limited to EU accounts. Accounts from other regions are rejected by the API endpoint and the integration cannot authenticate.*
 
 > ### 🔌 Echte Live-Daten per Bluetooth (smart system v19+)
 > Dieses Repo enthält neben der HACS-Integration auch eine **ESPHome-BLE-Bridge**, die einen ESP32 zur Brücke zum **Bosch eBike Live Data Interface** macht. Damit fließen Akku-SoC, Speed, Tachostand & Co. in Echtzeit nach Home Assistant.
@@ -41,7 +41,7 @@ Diese Custom Integration verbindet dein **Bosch eBike Smart System** mit Home As
 - **GPS-Track-Export:** Export aller Fahrten als GPX-Dateien (mit Speed, Cadence, Power als Garmin TrackPointExtension)
 - **Interaktive Kartendarstellung:** Custom Lovelace Card mit GPS-Tracks, geschwindigkeitsabhängiger Farbcodierung, Date-Picker und Prev/Next-Navigation
 - **3D-Karte mit Chase-Cam, Zeit-Slider und Gebäudeschatten:** Custom Lovelace Card (`bosch-ebike-3d-map-card`) für die Tour-Detailansicht mit 3D-Gebäuden, einer Kamera die dem Bike von hinten folgt, proportionaler Play-Geschwindigkeit (Default 60× Echtzeit) und Cast-Shadows nach Sonnenstand zur Tour-Zeit (MapLibre + OpenFreeMap, kostenlos und ohne API-Key)
-- **Dashboard-Card mit Bike-Bild, Live-Daten und Ladesteuerung:** Custom Lovelace Card (`bosch-ebike-dashboard-card`) mit eigenem Bike-Foto, Tachostand, Akkustand, Lade-Status, optionalem Ladeleistungssensor, Ziel-SoC-Schieberegler sowie Start-/Stop-Buttons über eine smarte Steckdose
+- **Dashboard-Card mit Bike-Bild, Live-Daten und Ladesteuerung:** Custom Lovelace Card (`bosch-ebike-dashboard-card`) mit eigenem Bike-Foto, Tachostand, Akkustand, Lade-Status, optionalem Ladeleistungssensor, Ziel-SoC-Schieberegler sowie Start-/Stop-Buttons über eine smarte Steckdose. Optional zeigt die Karte die **Reichweite je Fahrmodus** als farbige Piles (ECO/TOUR/TURBO/eMTB+ …); die Farbe pro Modus lässt sich im Karten-Editor passend zur Bosch Flow App zuordnen
 - **Automatische Token-Aktualisierung** über Refresh-Token
 - **30-Minuten-Polling-Intervall** (beim ersten Start werden alle Fahrten importiert)
 
@@ -86,77 +86,49 @@ Die Werte ersetzen die bisherige Snapshot-Schätzung in den Sensoren *Last Ride 
 
 ---
 
-#### Schritt 1: App im Bosch Data Act Portal registrieren (zuerst machen!)
-
-Dies ist der wichtigste Schritt. Du musst eine "App" im Bosch-Portal anlegen, um eine **Client-ID** zu erhalten.
+#### Schritt 1: App im Bosch Data Act Portal registrieren
 
 1. Gehe zu [portal.bosch-ebike.com/data-act/app](https://portal.bosch-ebike.com/data-act/app)
-2. Melde dich mit deiner SingleKey ID an
-3. Klicke auf **"App erstellen"** (oder "Create App")
+2. Melde dich mit deiner **SingleKey ID** an
+3. Klicke auf **"App erstellen"**
 4. Fülle das Formular aus:
    - **App-Name:** z. B. `Home Assistant`
-   - **Login URL:** `https://p9.authz.bosch.com/auth/realms/obc/protocol/openid-connect/auth`
-   - **Redirect URI:** `http://localhost:8888/callback`
+   - **Redirect URI:** `https://my.home-assistant.io/redirect/oauth`
+   - **Login URL:** `https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_bosch_ebike` (**wichtig, nicht mehr beliebig!** Über diese URL startet die Freigabe im eBike Manager den Einrichtungs-Flow direkt in deiner Home-Assistant-Instanz.)
+   - **Confidential client:** **AUS** lassen
 
-   > **Wichtig:** Die Login URL muss der Bosch OAuth-Endpunkt sein (siehe oben). Die Redirect-URI muss **exakt** `http://localhost:8888/callback` lauten.
+   > **Wichtig:** Die **Redirect URI** muss exakt `https://my.home-assistant.io/redirect/oauth` lauten - das ist die offizielle „My Home Assistant"-Weiterleitung, über die Home Assistant den Login automatisch abschließt. Die „My Home Assistant"-Integration muss in HA aktiviert sein (Standard). Falls du sie deaktiviert hast, registriere stattdessen `https://<deine-HA-URL>/auth/external/callback`.
 
-5. Nach dem Erstellen erhältst du eine **Client-ID** (im Format `euda-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+5. Nach dem Erstellen erhältst du eine **Client-ID** (Format `euda-xxxxxxxx-...`).
 
 #### Schritt 2: Client-ID sichern
 
-Kopiere die gerade erstellte **Client-ID** in ein Text-File oder einen Notizzettel - du brauchst sie später zum Einfügen per Copy & Paste.
+Kopiere die **Client-ID** - du brauchst sie gleich.
 
----
+#### Schritt 3: Integration in Home Assistant installieren
 
-#### Schritt 3: Integration in Home Assistant einrichten
+Installiere die Integration über **HACS** (siehe Abschnitt weiter unten) und starte Home Assistant neu. Erst danach kann der Freigabe-Link aus dem eBike Manager den Einrichtungs-Flow öffnen.
 
-> **Wichtig:** Am besten solltest du in deinem Browser **noch NICHT bei Bosch angemeldet** sein, bevor du diesen Schritt startest!
+#### Schritt 4: Integration einrichten (über „Service aktivieren")
 
-1. Kopiere den Ordner `custom_components/bosch_ebike/` in dein Home Assistant `config/custom_components/`-Verzeichnis
-2. Starte Home Assistant neu
-3. Gehe zu **Einstellungen → Geräte & Dienste → Integration hinzufügen**
-4. Suche nach **"Bosch eBike"**
-5. Gib deine **Client-ID** ein (aus Schritt 2)
-6. Es erscheint ein Feld für den **Autorisierungscode**. Im Home Assistant Log (Warnung) findest du eine URL:
-   ```
-   Bosch eBike: Open this URL in your browser to log in: https://p9.authz.bosch.com/auth/realms/obc/...
-   ```
-7. Kopiere diese URL und öffne sie **in einem neuen Browser-Tab**
-8. Melde dich mit deiner **SingleKey ID** an
-9. Nach dem Login wirst du zu `http://localhost:8888/callback?code=XXXX...` weitergeleitet
-   - Dein Browser wird "Seite nicht erreichbar" anzeigen - **das ist normal!**
-   - Kopiere den Wert nach `code=` aus der Adressleiste (alles bis zum `&` oder bis zum Ende der URL)
-   - ⏱️ **Wichtig: Dies ist zeitkritisch!** Der Code ist nur ca. 45–60 Sekunden gültig - kopiere und füge ihn schnell ein!
-10. Füge den Code in Home Assistant ein und klicke **Absenden** - ebenfalls innerhalb von 45–60 Sekunden!
+1. Öffne **Mein eBike → eBike Manager** und dort den Bereich **Data Act** (erreichbar über **[flow.bosch-ebike.com](https://flow.bosch-ebike.com)**).
+2. Klicke beim Eintrag für deine in Schritt 1 angelegte App auf **„Service aktivieren"**. Daraufhin öffnet sich automatisch deine Home-Assistant-Instanz (über die in Schritt 1 hinterlegte Login-URL).
+3. In Home Assistant öffnet sich der Einrichtungs-Flow: **Client-ID einfügen**, **Autorisieren**, bei Bosch anmelden und bestätigen.
+4. Die Integration ist jetzt eingerichtet - **aber die Entitäten fehlen noch**. Das ist normal, weiter mit Schritt 5.
 
-#### Schritt 4: Ergebnis prüfen
+> **Hinweis:** Alternativ kannst du die Integration auch manuell hinzufügen (**Einstellungen → Geräte & Dienste → Integration hinzufügen → "Bosch eBike"**, Client-ID einfügen, Autorisieren). Kein localhost und kein Copy & Paste: Home Assistant übernimmt den Login-Rücksprung über die "My Home Assistant"-Weiterleitung, Access- und Refresh-Token werden danach automatisch erneuert.
 
-Die Integration sollte jetzt eingerichtet sein - aber **noch ohne Entities!** Das ist normal. Weiter mit Schritt 5.
+#### Schritt 5: Datenfreigabe pro Bike aktivieren
 
----
+Ohne aktivierte Freigabe antwortet die API mit **403 Forbidden** und es erscheinen keine Entitäten.
 
-#### Schritt 5: Datenfreigabe aktivieren
+1. Gehe zurück zu **Mein eBike → eBike Manager → Data Act**.
+2. Aktiviere dort den **Schalter (Toggle)** für den in Schritt 1 angelegten Client - die Freigabe gilt **pro Bike**. Bei aktiver Freigabe wechselt die Anzeige auf **„Service deaktivieren"**.
+3. Lade in Home Assistant die **Bosch eBike** Integration neu (**⋮ → Neu laden**). Danach sind **alle Entitäten** da.
 
-Ohne Datenfreigabe liefert die API ein leeres Ergebnis!
+> Kommt direkt nach dem Aktivieren noch ein 403 oder fehlen Entitäten: ein paar Minuten warten (die Freigabe propagiert serverseitig) und erneut neu laden.
 
-1. Gehe zu **[flow.bosch-ebike.com](https://flow.bosch-ebike.com)**
-2. Melde dich mit deiner **SingleKey ID** an
-3. Wähle oben im Menü **"Data Act"** aus
-4. Suche den Eintrag **"Home Assistant"** und **aktiviere** ihn
-
-Jetzt solltest du auf der passenden Bosch-API Seite die Option sehen, die Client-ID zu aktivieren!
-
-#### Schritt 6: Integration neu laden
-
-Nachdem du die Client-ID im Flow Portal aktiviert hast:
-
-1. Gehe zurück zu **Home Assistant → Einstellungen → Geräte & Dienste**
-2. Suche die **Bosch eBike** Integration
-3. Klicke auf **⋮ (drei Punkte)** → **Neu laden**
-
-Die Integration sollte sich nun mit **allen verfügbaren Entities** aktualisieren (Bike-Daten, Batterie, letzte Fahrt, Gesamtstatistiken).
-
-#### 6. Kartenansicht einrichten (optional)
+#### Schritt 6: Kartenansicht einrichten (optional)
 
 Die Integration enthält eine interaktive Lovelace-Karte zur Anzeige deiner GPS-Tracks.
 
@@ -256,6 +228,7 @@ Auf der Karte gibt es einen 📍-Toggle in den Steuerelementen. Aktiviert er, wi
 - 🛠️ **Fahrradgeschäfte** und Reparaturstationen (`shop=bicycle`, `amenity=bicycle_repair_station`)
 - 💧 **Trinkwasser** (`amenity=drinking_water`)
 - 🚻 **Toiletten** (`amenity=toilets`)
+- 🍽️ **Gastronomie** (Restaurants, Cafés, Biergärten, Imbisse — `amenity=restaurant/cafe/biergarten/fast_food`)
 
 Klick auf einen Marker → Popup mit Name, Öffnungszeiten/Adresse/Website (sofern bei OSM hinterlegt) und Link zu OpenStreetMap. Pro Tour werden bis zu 100 Marker dargestellt; Ergebnisse werden im Browser-localStorage gecacht.
 
@@ -288,6 +261,61 @@ Neben dem von Bosch gelieferten Service-Termin (`Next Service Date`/`Next Servic
 - `ha_bosch_ebike_maintenance_due_soon` / `ha_bosch_ebike_maintenance_overdue` (für eigene Posten)
 
 Damit kann man z. B. eine Push-Mitteilung oder eine Beleuchtungs-Erinnerung bauen.
+
+### Reichweiten-Schätzung
+
+Pro Bike gibt es zwei Sensoren, die die Reichweite **schätzen** — auf Basis
+deines tatsächlichen Verbrauchs (distanzgewichteter Durchschnitt über die
+letzten ~500 km Tour-Historie):
+
+- **`Estimated Range (Full Battery)`** — geschätzte Reichweite mit vollem Akku
+  (Akkukapazität ÷ Ø-Verbrauch in Wh/km). Rein aus Cloud-Daten, immer verfügbar.
+- **`Estimated Range (Current)`** — geschätzte Restreichweite
+  (aktueller Akkustand × Kapazität ÷ Ø-Verbrauch). Erscheint nur, wenn in den
+  Integrations-Optionen der **Live-Akkustand-Sensor** der ESPHome-Bridge
+  verknüpft ist; aktualisiert sich sofort bei SoC-Änderungen.
+
+> ⚠️ **Das ist eine Schätzung, keine Garantie.** Die tatsächliche Reichweite
+> hängt stark von Unterstützungsmodus, Topografie, Wind, Temperatur und
+> Akkuzustand ab. Die Berechnungsgrundlage ist in den Sensor-Attributen
+> einsehbar (`wh_per_km`, `tours_used`, `window_km`). Solange weniger als
+> 3 Touren bzw. 30 km Verbrauchsdaten vorliegen, bleiben die Sensoren leer.
+
+### Routenplaner-Card (BRouter)
+
+Die Card `bosch-ebike-routeplanner-card` plant Fahrrad-Routen direkt im Dashboard
+— auf Basis des Open-Source-Routers [BRouter](https://brouter.de):
+
+```yaml
+type: custom:bosch-ebike-routeplanner-card
+height: 480
+```
+
+- **Wegpunkte per Klick** auf die Karte (Start, Ziel, beliebige Zwischenpunkte;
+  Marker ziehen = verschieben, anklicken = löschen)
+- **Profile:** Trekking, Rennrad, MTB, Kürzeste
+- **POIs entlang der Route** (📍-Schalter): Ladestationen, Fahrradläden/Werkstätten,
+  Trinkwasser, Toiletten und **Gastronomie** (Restaurants, Cafés, Biergärten) —
+  Daten von OpenStreetMap/Overpass
+- **Ergebnis:** Distanz, Anstieg/Abstieg, Fahrzeit, **geschätzter Verbrauch**
+  (dein Ø-Verbrauch aus der Reichweiten-Schätzung × Distanz)
+- **Akku-Check:** Ampel-Anzeige, ob die Route mit dem aktuellen Akkustand
+  machbar ist (benötigt verknüpften Live-Akkustand-Sensor) — wie die
+  Reichweiten-Sensoren eine **Schätzung**, keine Garantie
+- **Höhenprofil** als Diagramm unter der Karte
+- **GPX-Export** der geplanten Route (importierbar in Garmin Connect,
+  Komoot, die Flow-App u. a.)
+- **Routen speichern & laden:** geplante Routen unter eigenem Namen ablegen
+  (gespeichert in Home Assistant, auf allen Geräten verfügbar), über die
+  📁-Liste wieder laden, weiter bearbeiten oder löschen
+
+Optionen: `title`, `height`, `brouter_url` (eigene BRouter-Instanz statt
+brouter.de), `entity` (Reichweiten-Sensor), `soc_entity` (Live-Akkustand).
+
+> **Datenschutz:** Die Wegpunkt-Koordinaten werden zur Routenberechnung an den
+> konfigurierten BRouter-Server gesendet — standardmäßig der spendenfinanzierte
+> öffentliche Server `brouter.de`. Wer das nicht möchte, betreibt BRouter selbst
+> (Docker) und trägt die URL unter `brouter_url` ein.
 
 ### Heatmap-Card - alle Touren auf einer Karte
 
@@ -393,6 +421,7 @@ battery_entity: sensor.ebike_battery_soc_live
 charging_entity: binary_sensor.ebike_charger_connected
 last_tour_distance_entity: sensor.bosch_ebike_last_activity_distance
 charge_power_entity: sensor.ebike_smart_plug_power
+range_entity: sensor.cx_estimated_range_current
 charge_switch_entity: switch.ebike_smart_plug
 target_soc_entity: input_number.ebike_target_soc
 ```
@@ -401,6 +430,7 @@ target_soc_entity: input_number.ebike_target_soc
 
 - **Bike-Foto** mit eingebautem Upload im Karten-Editor (Bild auswählen, Karte schreibt den Pfad selbst). Alternativ klassisch über `/config/www/` und `/local/datei.jpg` referenzieren. Platzhalter mit Fahrrad-Icon, solange nichts gesetzt ist.
 - **Tachostand-Kachel** und optional **Letzte-Tour-Distanz**, **Ladeleistung in Watt**
+- **Geschätzte Restreichweite** als Kachel (`≈ 62 km`) — automatisch, sobald der Sensor „Geschätzte Reichweite (aktuell)“ existiert, oder explizit über `range_entity`. Wie bei den Sensoren eine **Schätzung**.
 - **Status-Pills** für Lade-Zustand und Akku-Prozent
 - **Ziel-SoC-Schieberegler**, der den Wert eines `input_number` setzt
 - **Start- und Stop-Buttons** mit Zwei-Klick-Bestätigung bei Stop (Versehensschutz)
@@ -442,9 +472,9 @@ Auf der Lovelace-Karte gibt es einen 📚-Toggle in den Karten-Steuerelementen. 
 
 | Problem | Lösung |
 |---------|--------|
-| Keine Entities nach Einrichtung | Datenfreigabe im Flow Portal aktivieren (Schritt 4) |
-| "Seite nicht erreichbar" nach Login | Normal! Kopiere den `code=`-Wert aus der Adressleiste |
-| Token-Austausch fehlgeschlagen | Prüfe, ob die Redirect-URI exakt `http://localhost:8888/callback` lautet |
+| Keine Entities nach Einrichtung | Datenfreigabe-Toggle im eBike Manager aktivieren (Schritt 5) |
+| „Client nicht gefunden" beim Login | „Service aktivieren" im eBike Manager nutzen (Schritt 4) und Client-ID auf Tippfehler/Leerzeichen prüfen |
+| „Invalid state" / Rücksprung schlägt fehl | „My Home Assistant" in HA aktiviert? Redirect-URI im Portal muss `https://my.home-assistant.io/redirect/oauth` sein |
 | Kilometerstand unrealistisch hoch | Der Odometer wird in Metern geliefert und automatisch in km umgerechnet |
 | Aktivitätsdaten fehlen | Prüfe, ob die Aktivitäten-Freigabe im Flow Portal aktiv ist |
 | Token nicht akzeptiert | Prüfe, ob die Client-ID korrekt eingegeben wurde |
@@ -463,6 +493,8 @@ Auf der Lovelace-Karte gibt es einen 📚-Toggle in den Karten-Steuerelementen. 
 | Active Assist Modes | - | Liste der aktiven Unterstützungsmodi |
 | Walk Assist Speed | km/h | Schiebehilfe-Geschwindigkeit |
 | Next Service Odometer | km | Nächster Service-Kilometerstand |
+| Estimated Range (Full Battery) | km | Geschätzte Reichweite mit vollem Akku (aus Ø-Verbrauch, Schätzung!) |
+| Estimated Range (Current) | km | Geschätzte Restreichweite (Live-SoC nötig, Schätzung!) |
 
 #### Batterie-Sensoren (pro Batterie)
 | Sensor | Einheit | Beschreibung |
@@ -508,11 +540,45 @@ Auf der Lovelace-Karte gibt es einen 📚-Toggle in den Karten-Steuerelementen. 
 > /config/bosch_ebike_gps/
 > ```
 
+#### 🆕 Erweiterte Data-Act-Entitäten (ab v1.18.0)
+
+Diese Entitäten erscheinen **automatisch** mit der normalen Einrichtung. Eine **zusätzliche oder separate Bosch-Datenfreigabe ist nicht nötig** – sie sind durch die übliche Autorisierung abgedeckt. Viele stehen je nach Bike trotzdem auf „unbekannt", weil die zugrunde liegenden Daten nicht existieren (siehe Hinweis unten).
+
+| Entität | Typ/Einheit | Beschreibung |
+|---------|-------------|--------------|
+| Reachable Range {Eco/Tour/eMTB/Turbo} | sensor / km | Offizielle Bosch-Reichweiten-Schätzung je Fahrmodus (ein Sensor pro aktivem Modus) |
+| Next Service Date | sensor / Datum | Nächster Service als Datum (ergänzt den km-basierten Next Service Odometer) |
+| State of Health | sensor / % | Akku-Gesundheit je Batterie aus dem digitalen Serviceheft |
+| Measured Capacity | sensor / Wh | Vom Händler gemessene Akkukapazität je Batterie |
+| Theft Reported | binary_sensor | Ob für das Bike ein Diebstahl gemeldet wurde (aus dem Bike-Pass) |
+| Last Known Location | device_tracker | Letzter bekannter Standort bei gemeldetem Diebstahl (aus dem Bike-Pass) |
+| Software Update Available | binary_sensor | Ob ein Software-Update für das Bike verfügbar ist |
+| Lifetime Distance {Modus} | sensor / km | Lebenszeit-Distanz je Fahrmodus (aus dem Serviceheft) |
+| Lifetime Energy {Modus} | sensor / Wh | Lebenszeit-Energie je Fahrmodus (aus dem Serviceheft) |
+| Last Service Date | sensor / Datum | Datum des letzten Services |
+| Last Service Dealer | sensor | Händler des letzten Services |
+| Last Service Odometer | sensor / km | Kilometerstand beim letzten Service |
+| Components | sensor (Diagnose) | Verbaute Komponenten laut Diagnose |
+| Last Ride Start Odometer | sensor / km | Start-Kilometerstand der letzten Fahrt |
+| Last Ride Max Altitude | sensor / m | Maximale Höhe der letzten Fahrt |
+
+> **⚠️ Wichtiger Hinweis zu diesen Entitäten:** Es ist **keine zusätzliche Bosch-Datenfreigabe** nötig, sie sind durch die normale Autorisierung abgedeckt. Sie stehen aber oft auf „unbekannt", weil die zugrunde liegenden Daten nur in bestimmten Fällen existieren:
+> - Der **Diebstahl-Standort** (`Last Known Location`) wird **nur befüllt, wenn ein Diebstahl gemeldet wurde** – es findet **keine fortlaufende Standortverfolgung** statt.
+> - Die **Akku-Gesundheit (State of Health)** und die gemessene Kapazität sind **erst nach einer Kapazitätsmessung beim Händler** verfügbar.
+> - **Serviceheft- und Kundenbericht-Daten** (Last Service, Lifetime-Werte) erscheinen nur, wenn entsprechende Einträge existieren.
+>
+> Andernfalls zeigen diese Entitäten „unbekannt" – das ist **so beabsichtigt** (by design).
+
 ---
 
 <a id="english"></a>
 
 ## English
+
+> ### ⚠️ Regional requirement
+> This integration only works with a Bosch SingleKey-ID account registered inside the EU. It uses the official Bosch Data Act API, whose availability is limited to EU accounts. Accounts from other regions are rejected by the API endpoint and the integration cannot authenticate.
+
+> **⚠️ Upgrade note (since v1.17.6):** The integration folder is now `ha_bosch_ebike` (was `bosch_ebike`). Your setup, devices and settings stay unchanged. If **both** folders exist in `config/custom_components/` after the HACS update, delete the old `bosch_ebike` once and restart Home Assistant.
 
 ### Description
 
@@ -574,77 +640,49 @@ These replace the snapshot-based estimates in *Last Ride Distance*, *Battery Con
 
 ---
 
-#### Step 1: Register an App in the Bosch Data Act Portal (do this first!)
-
-This is the most important step. You need to create an "App" in the Bosch portal to obtain a **Client-ID**.
+#### Step 1: Register an App in the Bosch Data Act Portal
 
 1. Go to [portal.bosch-ebike.com/data-act/app](https://portal.bosch-ebike.com/data-act/app)
-2. Sign in with your SingleKey ID
+2. Sign in with your **SingleKey ID**
 3. Click **"Create App"**
 4. Fill in the form:
    - **App Name:** e.g., `Home Assistant`
-   - **Login URL:** `https://p9.authz.bosch.com/auth/realms/obc/protocol/openid-connect/auth`
-   - **Redirect URI:** `http://localhost:8888/callback`
+   - **Redirect URI:** `https://my.home-assistant.io/redirect/oauth`
+   - **Login URL:** `https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_bosch_ebike` (**important, no longer arbitrary!** Bosch's eBike Manager uses this URL to start the setup flow directly in your Home Assistant instance.)
+   - **Confidential client:** leave **OFF**
 
-   > **Important:** The Login URL must be the Bosch OAuth endpoint shown above. The redirect URI must be **exactly** `http://localhost:8888/callback`.
+   > **Important:** The **Redirect URI** must be exactly `https://my.home-assistant.io/redirect/oauth` - this is the official "My Home Assistant" redirect that lets Home Assistant complete the login automatically. The "My Home Assistant" integration must be enabled in HA (it is by default). If you disabled it, register `https://<your-ha-url>/auth/external/callback` instead.
 
-5. After creating the app, you will receive a **Client-ID** (format: `euda-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+5. After creating the app, you will receive a **Client-ID** (format `euda-xxxxxxxx-...`).
 
 #### Step 2: Save your Client-ID
 
-Copy the **Client-ID** you just created into a text file or note - you will need it later for copy & paste.
+Copy the **Client-ID** - you will need it in a moment.
 
----
+#### Step 3: Install the Integration in Home Assistant
 
-#### Step 3: Set Up the Integration in Home Assistant
+Install the integration via **HACS** (see the section further down) and restart Home Assistant. Only then can the consent link from the eBike Manager open the setup flow.
 
-> **Important:** It's best if you are **NOT already logged into Bosch** in your browser before starting this step!
+#### Step 4: Set up the integration (via "Service aktivieren")
 
-1. Copy the `custom_components/bosch_ebike/` folder into your Home Assistant `config/custom_components/` directory
-2. Restart Home Assistant
-3. Go to **Settings → Devices & Services → Add Integration**
-4. Search for **"Bosch eBike"**
-5. Enter your **Client-ID** (from step 2)
-6. A field for the **Authorization Code** will appear. In the Home Assistant log (warning level), you'll find a URL:
-   ```
-   Bosch eBike: Open this URL in your browser to log in: https://p9.authz.bosch.com/auth/realms/obc/...
-   ```
-7. Copy this URL and open it **in a new browser tab**
-8. Sign in with your **SingleKey ID**
-9. After login, you'll be redirected to `http://localhost:8888/callback?code=XXXX...`
-   - Your browser will show "This site can't be reached" - **this is expected!**
-   - Copy the value after `code=` from the address bar (everything up to the `&` or the end of the URL)
-   - ⏱️ **Important: This is time-critical!** The code is only valid for about 45–60 seconds - copy and paste it quickly!
-10. Paste the code into Home Assistant and click **Submit** - also within 45–60 seconds!
+1. Open **My eBike → eBike Manager** and go to the **Data Act** section (reachable via **[flow.bosch-ebike.com](https://flow.bosch-ebike.com)**).
+2. On the entry for the app you created in Step 1, click **"Service aktivieren"**. This automatically opens your Home Assistant instance (via the Login URL you registered in Step 1).
+3. In Home Assistant the setup flow opens: **paste the Client-ID**, **Authorize**, sign in at Bosch and confirm.
+4. The integration is now set up - **but the entities are still missing**. That is normal, continue with Step 5.
 
-#### Step 4: Check the result
+> **Note:** Alternatively, you can add the integration manually (**Settings → Devices & Services → Add Integration → "Bosch eBike"**, paste the Client-ID, Authorize). No localhost and no copy & paste: Home Assistant handles the login round-trip via the "My Home Assistant" redirect, and the access and refresh tokens are then renewed automatically.
 
-The integration should now be set up - but **still without entities!** This is normal. Continue with step 5.
+#### Step 5: Activate data sharing per bike
 
----
+Without active data sharing the API answers with **403 Forbidden** and no entities appear.
 
-#### Step 5: Enable Data Sharing
+1. Go back to **My eBike → eBike Manager → Data Act**.
+2. There, activate the **toggle (switch)** for the client you created in Step 1 - data sharing applies **per bike**. When sharing is active, the label changes to **"Service deaktivieren"**.
+3. In Home Assistant, reload the **Bosch eBike** integration (**⋮ → Reload**). All **entities** then appear.
 
-Without data sharing enabled, the API will return empty results!
+> If you still get a 403 right after activating, or entities are missing: wait a few minutes (the consent propagates server-side) and reload again.
 
-1. Go to **[flow.bosch-ebike.com](https://flow.bosch-ebike.com)**
-2. Sign in with your **SingleKey ID**
-3. Select **"Data Act"** from the top menu
-4. Find the entry **"Home Assistant"** and **activate** it
-
-You should now see the option to activate the Client-ID on the Bosch API page!
-
-#### Step 6: Reload the Integration
-
-After activating the Client-ID in the Flow Portal:
-
-1. Go back to **Home Assistant → Settings → Devices & Services**
-2. Find the **Bosch eBike** integration
-3. Click **⋮ (three dots)** → **Reload**
-
-The integration should now update with **all available entities** (bike data, battery, last ride, aggregate statistics).
-
-#### 6. Set Up the Map Card (optional)
+#### Step 6: Set Up the Map Card (optional)
 
 The integration includes an interactive Lovelace card for displaying your GPS tracks.
 
@@ -742,6 +780,7 @@ Click the 📍 toggle in the map controls to overlay points of interest sourced 
 - 🛠️ **Bike shops** and repair stations (`shop=bicycle`, `amenity=bicycle_repair_station`)
 - 💧 **Drinking water** (`amenity=drinking_water`)
 - 🚻 **Toilets** (`amenity=toilets`)
+- 🍽️ **Food & drink** (restaurants, cafés, beer gardens, fast food — `amenity=restaurant/cafe/biergarten/fast_food`)
 
 Clicking a marker opens a popup with name, opening hours / address / website (if tagged in OSM) and a link to the OpenStreetMap node. Up to 100 markers per ride; results are cached in the browser's localStorage.
 
@@ -774,6 +813,62 @@ Beyond the official Bosch service info (`Next Service Date` / `Next Service Odom
 - `ha_bosch_ebike_maintenance_due_soon` / `ha_bosch_ebike_maintenance_overdue` (custom items)
 
 You can wire these up to push notifications, light reminders, etc.
+
+### Range estimation
+
+Per bike there are two sensors that **estimate** range — based on your
+actual consumption (distance-weighted average over the last ~500 km of
+tour history):
+
+- **`Estimated Range (Full Battery)`** — estimated range on a full battery
+  (battery capacity ÷ avg consumption in Wh/km). Purely from cloud data,
+  always available.
+- **`Estimated Range (Current)`** — estimated remaining range
+  (current battery level × capacity ÷ avg consumption). Only appears when
+  the **live battery level sensor** of the ESPHome bridge is linked in the
+  integration options; updates immediately on SoC changes.
+
+> ⚠️ **This is an estimate, not a guarantee.** Actual range depends heavily
+> on assist mode, topography, wind, temperature and battery condition. The
+> calculation basis is exposed in the sensor attributes (`wh_per_km`,
+> `tours_used`, `window_km`). As long as less than 3 tours or 30 km of
+> consumption data are available, the sensors stay empty.
+
+### Route planner card (BRouter)
+
+The `bosch-ebike-routeplanner-card` plans bike routes right in the dashboard
+— powered by the open-source router [BRouter](https://brouter.de):
+
+```yaml
+type: custom:bosch-ebike-routeplanner-card
+height: 480
+```
+
+- **Waypoints by clicking** the map (start, destination, any number of via
+  points; drag a marker to move it, click it to remove it)
+- **Profiles:** Trekking, Road bike, MTB, Shortest
+- **POIs along the route** (📍 toggle): charging stations, bike shops/repair
+  stations, drinking water, toilets and **food & drink** (restaurants, cafés,
+  beer gardens) — data from OpenStreetMap/Overpass
+- **Result:** distance, ascent/descent, ride time, **estimated consumption**
+  (your average consumption from the range estimation × distance)
+- **Battery check:** traffic-light indicator showing whether the route is
+  doable with the current battery level (needs the linked live battery level
+  sensor) — like the range sensors an **estimate**, not a guarantee
+- **Elevation profile** chart below the map
+- **GPX export** of the planned route (importable into Garmin Connect,
+  Komoot, the Flow app and others)
+- **Save & load routes:** store planned routes under a name of your choice
+  (saved in Home Assistant, available on all your devices), reload them from
+  the 📁 list, keep editing or delete them
+
+Options: `title`, `height`, `brouter_url` (your own BRouter instance instead
+of brouter.de), `entity` (range sensor), `soc_entity` (live battery level).
+
+> **Privacy:** The waypoint coordinates are sent to the configured BRouter
+> server for route calculation — by default the donation-funded public server
+> `brouter.de`. If you'd rather not, run BRouter yourself (Docker) and enter
+> the URL under `brouter_url`.
 
 ### Heatmap card - all rides overlaid
 
@@ -879,6 +974,7 @@ battery_entity: sensor.ebike_battery_soc_live
 charging_entity: binary_sensor.ebike_charger_connected
 last_tour_distance_entity: sensor.bosch_ebike_last_activity_distance
 charge_power_entity: sensor.ebike_smart_plug_power
+range_entity: sensor.cx_estimated_range_current
 charge_switch_entity: switch.ebike_smart_plug
 target_soc_entity: input_number.ebike_target_soc
 ```
@@ -887,6 +983,7 @@ target_soc_entity: input_number.ebike_target_soc
 
 - **Bike photo** with a built-in upload right in the card editor (pick a file, the card fills the path itself). Or paste a classic `/local/file.jpg` URL after dropping a file into `/config/www/`. A placeholder with a bicycle icon is shown when nothing is set.
 - **Odometer tile**, plus optional **last-tour distance** and **charging power in watts**
+- **Estimated remaining range** as a tile (`≈ 62 km`) — automatic as soon as the "Estimated range (current)" sensor exists, or explicitly via `range_entity`. Like the sensors, an **estimate**.
 - **Status pills** for charging state and battery percent
 - **Target-SoC slider** that writes to an `input_number`
 - **Start and Stop buttons** with a two-click confirm on Stop (accident protection)
@@ -928,9 +1025,9 @@ The Lovelace card has a 📚 toggle in the map controls. When enabled, the card 
 
 | Problem | Solution |
 |---------|----------|
-| No entities after setup | Enable data sharing in the Flow Portal (step 4) |
-| "This site can't be reached" after login | Expected! Copy the `code=` value from the address bar |
-| Token exchange failed | Check that redirect URI is exactly `http://localhost:8888/callback` |
+| No entities after setup | Activate the data-sharing toggle in the eBike Manager (step 5) |
+| "Client not found" during login | Use "Service aktivieren" in the eBike Manager (step 4) and check the Client-ID for typos/spaces |
+| "Invalid state" / redirect back fails | Is "My Home Assistant" enabled in HA? The portal redirect URI must be `https://my.home-assistant.io/redirect/oauth` |
 | Odometer unrealistically high | The odometer is delivered in meters and automatically converted to km |
 | Activity data missing | Check that activity sharing is enabled in the Flow Portal |
 | Token not accepted | Check that the Client-ID was entered correctly |
@@ -949,6 +1046,8 @@ The Lovelace card has a 📚 toggle in the map controls. When enabled, the card 
 | Active Assist Modes | - | List of active assist modes |
 | Walk Assist Speed | km/h | Walk assist speed |
 | Next Service Odometer | km | Next service due at odometer reading |
+| Estimated Range (Full Battery) | km | Estimated range on a full battery (from avg consumption, estimate!) |
+| Estimated Range (Current) | km | Estimated remaining range (live SoC required, estimate!) |
 
 #### Battery Sensors (per battery)
 | Sensor | Unit | Description |
@@ -993,6 +1092,35 @@ The Lovelace card has a 📚 toggle in the map controls. When enabled, the card 
 > ```
 > /config/bosch_ebike_gps/
 > ```
+
+#### 🆕 Extended Data Act entities (from v1.18.0)
+
+These entities appear **automatically** with the normal setup. **No additional or separate Bosch data-sharing consent is required** – they are covered by the usual authorization. Many still show "unknown" depending on the bike, because the underlying data does not exist (see the note below).
+
+| Entity | Type/Unit | Description |
+|--------|-----------|-------------|
+| Reachable Range {Eco/Tour/eMTB/Turbo} | sensor / km | Official Bosch per-mode reachable-range estimate (one sensor per active mode) |
+| Next Service Date | sensor / date | Next service as a date (complements the km-based Next Service Odometer) |
+| State of Health | sensor / % | Battery state of health per battery, from the Digital Service Book |
+| Measured Capacity | sensor / Wh | Dealer-measured battery capacity per battery |
+| Theft Reported | binary_sensor | Whether a theft has been reported for the bike (from the Bike Pass) |
+| Last Known Location | device_tracker | Last known location when a theft is reported (from the Bike Pass) |
+| Software Update Available | binary_sensor | Whether a software update is available for the bike |
+| Lifetime Distance {mode} | sensor / km | Lifetime distance per assist mode (from the service book) |
+| Lifetime Energy {mode} | sensor / Wh | Lifetime energy per assist mode (from the service book) |
+| Last Service Date | sensor / date | Date of the last service |
+| Last Service Dealer | sensor | Dealer of the last service |
+| Last Service Odometer | sensor / km | Odometer reading at the last service |
+| Components | sensor (diagnostic) | Installed components per diagnostics |
+| Last Ride Start Odometer | sensor / km | Start odometer of the last ride |
+| Last Ride Max Altitude | sensor / m | Maximum altitude of the last ride |
+
+> **⚠️ Important note about these entities:** **No additional Bosch data-sharing consent is required** – they are covered by the normal authorization. They often show "unknown", though, because the underlying data only exists in certain cases:
+> - The **theft location** (`Last Known Location`) is **only populated when a theft has been reported** – there is **no continuous location tracking**.
+> - **Battery State of Health** and measured capacity are **only available after a dealer capacity measurement**.
+> - **Service-book and customer-report data** (Last Service, lifetime values) only appear if such records exist.
+>
+> Otherwise these entities show "unknown" – this is **by design**.
 
 ---
 

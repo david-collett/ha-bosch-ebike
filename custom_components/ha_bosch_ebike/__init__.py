@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 import os
+import uuid
 
+import aiohttp
 import voluptuous as vol
 
 from homeassistant.components import websocket_api
@@ -14,17 +18,36 @@ from homeassistant.components.lovelace.resources import ResourceStorageCollectio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.storage import Store
 
 from .api import BoschEBikeAPI
+from .brouter import (
+    ALLOWED_PROFILES,
+    MAX_POINTS,
+    MIN_POINTS,
+    BRouterRequestError,
+    build_brouter_url,
+)
 from .const import DOMAIN, CONF_CLIENT_ID
 from .coordinator import BoschEBikeCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.NUMBER, Platform.DATE]
+# This integration is configured exclusively via the UI (config entries),
+# never via YAML — declare that so hassfest is satisfied.
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+PLATFORMS = [
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.DATE,
+    Platform.DEVICE_TRACKER,
+]
 
 CARD_URL = "/ha_bosch_ebike/bosch-ebike-map-card.js"
 
@@ -94,6 +117,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     websocket_api.async_register_command(hass, ws_get_card_settings)
     websocket_api.async_register_command(hass, ws_set_card_settings)
     websocket_api.async_register_command(hass, ws_overpass_pois)
+    websocket_api.async_register_command(hass, ws_plan_route)
+    websocket_api.async_register_command(hass, ws_list_routes)
+    websocket_api.async_register_command(hass, ws_save_route)
+    websocket_api.async_register_command(hass, ws_delete_route)
 
     # Singleton Store für gemeinsame Darstellungs-Settings, die sowohl
     # die 3D-Karte als auch die 2D-Karte (Chase-Cam-Overlay + Editor)
@@ -106,6 +133,19 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         loaded = await store.async_load() or {}
         domain_data["card_settings_store"] = store
         domain_data["card_settings"] = loaded if isinstance(loaded, dict) else {}
+
+    # Singleton Store für gespeicherte Routenplaner-Routen. Gleiche
+    # Mechanik wie die Card-Settings: einmal laden, in hass.data halten,
+    # WS-Handler lesen/schreiben gegen diese Liste und persistieren über
+    # den Store. Liegt im Backend, damit gespeicherte Routen auf allen
+    # Geräten verfügbar sind (wie die Wartungsliste).
+    if "saved_routes_store" not in domain_data:
+        routes_store = Store(hass, 1, f"{DOMAIN}_saved_routes")
+        loaded_routes = await routes_store.async_load() or []
+        domain_data["saved_routes_store"] = routes_store
+        domain_data["saved_routes"] = (
+            loaded_routes if isinstance(loaded_routes, list) else []
+        )
 
     _register_services(hass)
 
@@ -148,22 +188,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # React to OptionsFlow changes (live BLE sensor wiring): clear the
-    # enrichment cache and trigger a fresh poll so new options take effect
-    # immediately.
+    # React to OptionsFlow changes (live BLE sensor wiring): reload the
+    # entry so entities depending on options (e.g. the current-range
+    # sensor) are created/removed immediately. The coordinator — and with
+    # it the enrichment cache — is rebuilt as part of the reload.
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options updates by invalidating cache and refreshing."""
-    coordinator: BoschEBikeCoordinator | None = hass.data.get(DOMAIN, {}).get(
-        entry.entry_id
-    )
-    if coordinator is None:
-        return
-    coordinator.invalidate_live_enrichment_cache()
-    await coordinator.async_request_refresh()
+    """Handle options updates by reloading the config entry."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -930,6 +965,23 @@ OVERPASS_ENDPOINTS = [
     "https://overpass.private.coffee/api/interpreter",
 ]
 
+# Whitelist of selectable POI categories. Only these keys are accepted from the
+# frontend; everything else is silently dropped so arbitrary Overpass selectors
+# can never be injected through the websocket API.
+POI_CATEGORY_SELECTORS = {
+    "charging": ['node["amenity"="charging_station"]'],
+    "bicycle": ['node["shop"="bicycle"]', 'node["amenity"="bicycle_repair_station"]'],
+    "water": ['node["amenity"="drinking_water"]'],
+    "toilets": ['node["amenity"="toilets"]'],
+    "food": [
+        'node["amenity"="restaurant"]',
+        'node["amenity"="cafe"]',
+        'node["amenity"="biergarten"]',
+        'node["amenity"="fast_food"]',
+    ],
+}
+DEFAULT_POI_CATEGORIES = ("charging", "bicycle", "water", "toilets")
+
 
 @websocket_api.websocket_command(
     {
@@ -938,6 +990,7 @@ OVERPASS_ENDPOINTS = [
         vol.Required("west"): vol.Coerce(float),
         vol.Required("north"): vol.Coerce(float),
         vol.Required("east"): vol.Coerce(float),
+        vol.Optional("categories"): [str],
     }
 )
 @websocket_api.async_response
@@ -946,11 +999,12 @@ async def ws_overpass_pois(
 ) -> None:
     """Proxy Overpass POI queries through the backend (no CORS).
 
-    Looks up charging stations, bike shops/repair stations, drinking water and
-    toilets within the supplied bounding box. Each Overpass mirror is tried in
-    turn; the first that responds with valid JSON wins. The full element list
-    is passed back to the card; client-side proximity filtering keeps the
-    radius user-tunable.
+    Looks up POIs of the requested categories (see POI_CATEGORY_SELECTORS)
+    within the supplied bounding box; without a "categories" parameter the
+    classic set (charging stations, bike shops/repair stations, drinking water
+    and toilets) is used. Each Overpass mirror is tried in turn; the first
+    that responds with valid JSON wins. The full element list is passed back
+    to the card; client-side proximity filtering keeps the radius user-tunable.
     """
     import asyncio
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -961,15 +1015,27 @@ async def ws_overpass_pois(
     east = float(msg["east"])
     bbox = f"({south},{west},{north},{east})"
 
+    requested = msg.get("categories") or list(DEFAULT_POI_CATEGORIES)
+    categories = [key for key in requested if key in POI_CATEGORY_SELECTORS]
+    if not categories:
+        connection.send_error(
+            msg["id"],
+            "invalid_request",
+            f"No valid POI categories in {requested!r}",
+        )
+        return
+
+    selectors: list[str] = []
+    for key in categories:
+        for selector in POI_CATEGORY_SELECTORS[key]:
+            if selector not in selectors:
+                selectors.append(selector)
+
     query = (
         "[out:json][timeout:30];"
         "("
-        f'node["amenity"="charging_station"]{bbox};'
-        f'node["shop"="bicycle"]{bbox};'
-        f'node["amenity"="bicycle_repair_station"]{bbox};'
-        f'node["amenity"="drinking_water"]{bbox};'
-        f'node["amenity"="toilets"]{bbox};'
-        ");"
+        + "".join(f"{selector}{bbox};" for selector in selectors)
+        + ");"
         "out body;"
     )
 
@@ -1011,3 +1077,220 @@ async def ws_overpass_pois(
         return
 
     connection.send_result(msg["id"], {"elements": elements})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "bosch_ebike/plan_route",
+        vol.Required("lonlats"): [[vol.Coerce(float)]],
+        vol.Required("profile"): str,
+        vol.Optional("brouter_url"): vol.Any(str, None),
+    }
+)
+@websocket_api.async_response
+async def ws_plan_route(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict
+) -> None:
+    """Proxy a routing request to BRouter (CORS-safe, like the POI proxy)."""
+    try:
+        url = build_brouter_url(msg.get("brouter_url"), msg["lonlats"], msg["profile"])
+    except BRouterRequestError as err:
+        connection.send_error(msg["id"], "invalid_request", str(err))
+        return
+
+    session = async_get_clientsession(hass)
+    try:
+        async with asyncio.timeout(30):
+            resp = await session.get(url)
+            body = await resp.text()
+    except (TimeoutError, aiohttp.ClientError) as err:
+        connection.send_error(msg["id"], "server_unreachable", f"BRouter not reachable: {err}")
+        return
+
+    # BRouter returns errors as plain text with status 200 *or* non-200 —
+    # treat any non-JSON body as a routing failure and pass the text through.
+    if resp.status != 200 or not body.lstrip().startswith("{"):
+        connection.send_error(msg["id"], "routing_failed", body.strip()[:300] or f"HTTP {resp.status}")
+        return
+
+    try:
+        geojson = json.loads(body)
+    except ValueError:
+        connection.send_error(msg["id"], "routing_failed", "invalid response from BRouter")
+        return
+
+    connection.send_result(msg["id"], {"geojson": geojson})
+
+
+# Obergrenze für gespeicherte Planer-Routen. Schützt den Store vor
+# unbegrenztem Wachstum; Updates bestehender Einträge sind immer erlaubt.
+MAX_SAVED_ROUTES = 50
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): "bosch_ebike/list_routes"}
+)
+@websocket_api.async_response
+async def ws_list_routes(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict
+) -> None:
+    """Return all saved route-planner routes.
+
+    Each entry carries id, name, profile, lonlats, distance_km and the
+    "updated" UTC ISO timestamp - everything the planner card needs to
+    render the list and to restore a route for further editing.
+    """
+    routes = hass.data.get(DOMAIN, {}).get("saved_routes", []) or []
+    connection.send_result(msg["id"], {"routes": routes})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "bosch_ebike/save_route",
+        vol.Required("name"): str,
+        vol.Required("profile"): str,
+        vol.Required("lonlats"): [[vol.Coerce(float)]],
+        # "id" is reserved for the websocket message id, hence "route_id".
+        vol.Optional("route_id"): vol.Any(str, None),
+        vol.Optional("distance_km"): vol.Any(vol.Coerce(float), None),
+    }
+)
+@websocket_api.async_response
+async def ws_save_route(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict
+) -> None:
+    """Save (upsert) a planned route under a user-chosen name.
+
+    Upsert semantics: if "route_id" is given and exists, that entry is
+    updated in place (renaming allowed). Otherwise an entry whose name
+    matches case-insensitively is overwritten (keeping its id), so saving
+    under an existing name never produces duplicates. Only when neither
+    matches is a new entry appended - capped at MAX_SAVED_ROUTES.
+    """
+    from homeassistant.util import dt as dt_util
+
+    name = (msg.get("name") or "").strip()
+    if not 1 <= len(name) <= 60:
+        connection.send_error(
+            msg["id"], "invalid_request", "name must be 1-60 characters"
+        )
+        return
+
+    profile = msg["profile"]
+    if profile not in ALLOWED_PROFILES:
+        connection.send_error(
+            msg["id"],
+            "invalid_request",
+            f"profile must be one of {ALLOWED_PROFILES}, got {profile!r}",
+        )
+        return
+
+    raw_points = msg.get("lonlats") or []
+    if not MIN_POINTS <= len(raw_points) <= MAX_POINTS:
+        connection.send_error(
+            msg["id"],
+            "invalid_request",
+            f"waypoint count must be {MIN_POINTS}-{MAX_POINTS}, got {len(raw_points)}",
+        )
+        return
+    lonlats: list[list[float]] = []
+    for pair in raw_points:
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            connection.send_error(
+                msg["id"], "invalid_request", "each waypoint must be a [lon, lat] pair"
+            )
+            return
+        lon, lat = float(pair[0]), float(pair[1])
+        # NaN/Inf wuerde als nicht-standardkonformes JSON im Store landen und
+        # den naechsten async_load scheitern lassen; Bereichscheck weist
+        # nicht-endliche Werte automatisch ab (NaN-Vergleiche sind False).
+        if not (-180.0 <= lon <= 180.0 and -90.0 <= lat <= 90.0):
+            connection.send_error(
+                msg["id"], "invalid_request", f"waypoint out of range: {pair!r}"
+            )
+            return
+        lonlats.append([lon, lat])
+
+    distance_km = msg.get("distance_km")
+    if distance_km is not None:
+        distance_km = float(distance_km)
+        if not 0.0 <= distance_km <= 100000.0:
+            distance_km = None
+        else:
+            distance_km = round(distance_km, 1)
+
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    routes = list(domain_data.get("saved_routes", []) or [])
+
+    entry = {
+        "name": name,
+        "profile": profile,
+        "lonlats": lonlats,
+        "distance_km": distance_km,
+        "updated": dt_util.utcnow().isoformat(),
+    }
+
+    route_id = msg.get("route_id")
+    index = None
+    if route_id:
+        index = next(
+            (i for i, r in enumerate(routes) if r.get("id") == route_id), None
+        )
+    if index is None:
+        folded = name.casefold()
+        index = next(
+            (
+                i
+                for i, r in enumerate(routes)
+                if (r.get("name") or "").strip().casefold() == folded
+            ),
+            None,
+        )
+
+    if index is not None:
+        entry["id"] = routes[index].get("id") or uuid.uuid4().hex[:12]
+        routes[index] = entry
+    else:
+        if len(routes) >= MAX_SAVED_ROUTES:
+            connection.send_error(
+                msg["id"],
+                "limit_reached",
+                f"Maximum of {MAX_SAVED_ROUTES} saved routes reached - "
+                "delete an old route first",
+            )
+            return
+        entry["id"] = uuid.uuid4().hex[:12]
+        routes.append(entry)
+
+    domain_data["saved_routes"] = routes
+    store = domain_data.get("saved_routes_store")
+    if store is not None:
+        await store.async_save(routes)
+    connection.send_result(msg["id"], {"routes": routes, "saved_id": entry["id"]})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "bosch_ebike/delete_route",
+        # "id" is reserved for the websocket message id, hence "route_id".
+        vol.Required("route_id"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_delete_route(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict
+) -> None:
+    """Delete a saved planner route by id.
+
+    Idempotent: an unknown id simply returns the current list, so a
+    double-click in the card can never surface an error.
+    """
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    routes = list(domain_data.get("saved_routes", []) or [])
+    remaining = [r for r in routes if r.get("id") != msg["route_id"]]
+    if len(remaining) != len(routes):
+        domain_data["saved_routes"] = remaining
+        store = domain_data.get("saved_routes_store")
+        if store is not None:
+            await store.async_save(remaining)
+    connection.send_result(msg["id"], {"routes": remaining})

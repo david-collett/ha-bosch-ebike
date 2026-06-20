@@ -11,13 +11,17 @@ from typing import Any
 
 import aiohttp
 
-from .const import API_BASE_PROFILE_URL, API_BASE_ACTIVITY_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT
+from .const import API_BASE_URL, AUTH_URL, TOKEN_URL, BIKES_ENDPOINT, ACTIVITIES_ENDPOINT, BIKE_PASS_ENDPOINT, SERVICE_RECORDS_ENDPOINT
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class BoschEBikeAPI:
     """Async client for the Bosch eBike Data Act API."""
+
+    # Single shared timeout for every Bosch cloud request. Without it a hung
+    # connection would block the coordinator poll indefinitely.
+    _TIMEOUT = aiohttp.ClientTimeout(total=30)
 
     def __init__(
         self,
@@ -66,7 +70,7 @@ class BoschEBikeAPI:
             "redirect_uri": redirect_uri,
             "code_verifier": self._code_verifier,
         }
-        async with self._session.post(TOKEN_URL, data=data) as resp:
+        async with self._session.post(TOKEN_URL, data=data, timeout=self._TIMEOUT) as resp:
             resp.raise_for_status()
             tokens = await resp.json()
         self._access_token = tokens["access_token"]
@@ -81,7 +85,7 @@ class BoschEBikeAPI:
             "code": code,
             "redirect_uri": redirect_uri,
         }
-        async with self._session.post(TOKEN_URL, data=data) as resp:
+        async with self._session.post(TOKEN_URL, data=data, timeout=self._TIMEOUT) as resp:
             resp.raise_for_status()
             tokens = await resp.json()
         self._access_token = tokens["access_token"]
@@ -97,7 +101,7 @@ class BoschEBikeAPI:
             "client_id": self._client_id,
             "refresh_token": self._refresh_token,
         }
-        async with self._session.post(TOKEN_URL, data=data) as resp:
+        async with self._session.post(TOKEN_URL, data=data, timeout=self._TIMEOUT) as resp:
             resp.raise_for_status()
             tokens = await resp.json()
         self._access_token = tokens["access_token"]
@@ -126,7 +130,7 @@ class BoschEBikeAPI:
             raise AuthError("Not authenticated")
         headers = {"Authorization": f"Bearer {self._access_token}"}
         url = f"{base_url}{path}"
-        async with self._session.get(url, headers=headers) as resp:
+        async with self._session.get(url, headers=headers, timeout=self._TIMEOUT) as resp:
             if resp.status == 401 and retry_on_401:
                 _LOGGER.debug("401 received, refreshing token")
                 await self.refresh_access_token()
@@ -256,6 +260,14 @@ class BoschEBikeAPI:
         """Fetch full activity detail including GPS track points."""
         data = await self._get(API_BASE_ACTIVITY_URL, f"{ACTIVITIES_ENDPOINT}/{activity_id}/detail")
         return self.convert_detail(data)
+
+    async def get_bike_pass(self, bike_id: str) -> dict[str, Any]:
+        """Bike Pass (frame number + theft report logs) for one bike."""
+        return await self._get(f"{BIKE_PASS_ENDPOINT}?bikeId={bike_id}")
+
+    async def get_service_records(self, bike_id: str) -> dict[str, Any]:
+        """Digital Service Book records (battery measurements, customer reports) for one bike."""
+        return await self._get(f"{SERVICE_RECORDS_ENDPOINT}?bikeId={bike_id}")
 
     async def get_all_activity_details(
         self, activity_ids: list[str], progress_callback: Any = None

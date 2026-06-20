@@ -10,6 +10,8 @@ API_BASE_ACTIVITY_URL = "https://obc-rider-activity.prod.connected-biking.cloud"
 
 BIKES_ENDPOINT = "/v2/bike-profile"
 ACTIVITIES_ENDPOINT = "/v1/activity"
+BIKE_PASS_ENDPOINT = "/bike-pass/smart-system/v1/bike-passes"
+SERVICE_RECORDS_ENDPOINT = "/service-book/smart-system/v1/service-records"
 
 DEFAULT_SCAN_INTERVAL = 30  # minutes
 DEFAULT_BATTERY_CAPACITY_WH = 750  # Default battery capacity in Wh
@@ -25,6 +27,13 @@ EVENT_MAINTENANCE_DUE_SOON = f"{DOMAIN}_maintenance_due_soon"
 EVENT_MAINTENANCE_OVERDUE = f"{DOMAIN}_maintenance_overdue"
 
 REDIRECT_URI = "onebikeapp-android://com.bosch.ebike.onebikeapp/oauth2redirect"
+
+# Bosch Data Act developer portal where the user registers an "app" to get a
+# Client-ID and must ACTIVATE it before the OAuth login works.
+FLOW_PORTAL_URL = "https://portal.bosch-ebike.com/data-act/app"
+
+# OAuth2 scope requested during authorization.
+OAUTH_SCOPE = "openid"
 
 CONF_CLIENT_ID = "client_id"
 
